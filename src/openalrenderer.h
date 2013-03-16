@@ -17,8 +17,8 @@
 #ifndef OPENAL_RENDERER_H
 #define OPENAL_RENDERER_H
 
-#include <AL/al.h>
-#include <AL/alc.h>
+#include <al.h>
+#include <alc.h>
 
 #include <deque>
 #include "audio/audiorenderer.h"
