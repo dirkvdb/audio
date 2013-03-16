@@ -39,7 +39,7 @@
 namespace audio
 {
 
-IRenderer* AudioRendererFactory::create(const std::string& audioBackend)
+IRenderer* RendererFactory::create(const std::string& name, const std::string& audioBackend)
 {
     if (audioBackend == "OpenAL")
     {
@@ -62,7 +62,7 @@ IRenderer* AudioRendererFactory::create(const std::string& audioBackend)
     if (audioBackend == "PulseAudio")
     {
 #ifdef HAVE_PULSE
-        return new PulseRenderer();
+        return new PulseRenderer(name);
 #else
         throw std::logic_error("AudioRendererFactory: package was not compiled with PulseAudio support");
 #endif

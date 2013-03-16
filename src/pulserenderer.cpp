@@ -32,7 +32,7 @@ using namespace utils;
 namespace audio
 {
 
-PulseRenderer::PulseRenderer()
+PulseRenderer::PulseRenderer(const std::string& name)
 : m_pPulseContext(nullptr)
 , m_pPulseLoop(nullptr)
 , m_pMainloopApi(nullptr)
@@ -54,7 +54,7 @@ PulseRenderer::PulseRenderer()
     m_pMainloopApi = pa_threaded_mainloop_get_api(m_pPulseLoop);
     assert(m_pMainloopApi);
 
-    if (!(m_pPulseContext = pa_context_new(m_pMainloopApi, "Audio")))
+    if (!(m_pPulseContext = pa_context_new(m_pMainloopApi, name.c_str())))
     {
         throw logic_error("PulseRenderer: Failed to create new context");
     }

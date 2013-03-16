@@ -23,12 +23,11 @@ namespace audio
 {
 
 class IRenderer;
-class PlaybackEngine;
 
-class AudioRendererFactory
+class RendererFactory
 {
 public:
-    static IRenderer* create(const std::string& audioBackend);
+    static IRenderer* create(const std::string& name, const std::string& audioBackend);
 };
 
 }

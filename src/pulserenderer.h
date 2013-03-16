@@ -36,7 +36,7 @@ struct Format;
 class PulseRenderer : public IRenderer
 {
 public:
-    PulseRenderer();
+    PulseRenderer(const std::string& name);
     virtual ~PulseRenderer();
 
     void setFormat(const Format& format);
