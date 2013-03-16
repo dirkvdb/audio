@@ -1,0 +1,8 @@
+#ifndef UTILS_CONFIG_H
+#define UTILS_CONFIG_H
+
+#cmakedefine HAVE_OPENAL 1
+#cmakedefine HAVE_ALSA 1
+#cmakedefine HAVE_PULSE 1
+
+#endif
