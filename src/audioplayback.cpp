@@ -82,7 +82,11 @@ Playback::~Playback()
     updateWaveHeaderSize();
 #endif
 
-    m_pAudioRenderer->VolumeChanged.disconnect(this);
+    if (m_pAudioRenderer)
+    {
+        m_pAudioRenderer->VolumeChanged.disconnect(this);
+    }
+    
     m_PlaybackCondition.notify_all();
 
     if (m_PlaybackThread.joinable())
@@ -183,7 +187,6 @@ void Playback::playback()
                 }
 
                 m_pAudioRenderer->queueFrame(m_AudioFrame);
-                frameConsumed = true;
                 
                 #ifdef DUMP_TO_WAVE
                 dumpToWav(m_AudioFrame);

@@ -14,7 +14,7 @@
 //    along with this program; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#include "ffmpegdecoder.h"
+#include "audioffmpegdecoder.h"
 #include "audio/audioframe.h"
 #include "audio/audioformat.h"
 #include "utils/log.h"

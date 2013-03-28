@@ -242,7 +242,7 @@ inline int32_t dither(mad_fixed_t sample, mad_fixed_t ditherError[3], mad_fixed_
     mad_fixed_t rand = prng(random);
     output += (rand & mask) - (random & mask);
 
-    random = rand;
+    //random = rand;
 
     /* clip */
     if (output >= MAD_F_ONE)

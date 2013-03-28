@@ -25,7 +25,7 @@ struct AVCodec;
 struct AVPacket;
 struct AVStream;
 
-#include "audiodecoder.h"
+#include "audio/audiodecoder.h"
 #include "utils/types.h"
 
 extern "C"

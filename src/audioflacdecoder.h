@@ -14,8 +14,8 @@
 //    along with this program; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#ifndef FLAC_DECODER_H
-#define FLAC_DECODER_H
+#ifndef AUDIO_FLAC_DECODER_H
+#define AUDIO_FLAC_DECODER_H
 
 #include <string>
 #include <vector>
@@ -24,9 +24,10 @@
 #include <cassert>
 #include <FLAC++/decoder.h>
 
-#include "AudioDecoder/audiodecoder.h"
+#include "audio/audiodecoder.h"
 #include "audio/audioformat.h"
 #include "utils/types.h"
+#include "utils/readerinterface.h"
 
 namespace audio
 {
@@ -62,12 +63,11 @@ protected:
     void error_callback(FLAC__StreamDecoderErrorStatus status);
 
 private:
-    int32_t                     m_AudioStream;
-    std::vector<uint8_t>        m_AudioBuffer;
-    uint32_t                    m_BytesPerFrame;
-    uint64_t                    m_NumSamples;
-    Format                      m_Format;
-    std::unique_ptr<IReader>    m_pReader;
+    std::vector<uint8_t>            m_AudioBuffer;
+    uint32_t                        m_BytesPerFrame;
+    uint64_t                        m_NumSamples;
+    Format                          m_Format;
+    std::unique_ptr<utils::IReader> m_pReader;
 };
 
 }

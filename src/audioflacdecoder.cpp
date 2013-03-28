@@ -14,13 +14,13 @@
 //    along with this program; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#include "flacdecoder.h"
+#include "audioflacdecoder.h"
 
 #include <stdexcept>
 #include <cassert>
 #include <mutex>
 
-#include "readerfactory.h"
+#include "audio/audioreaderfactory.h"
 #include "audio/audioframe.h"
 #include "utils/log.h"
 
