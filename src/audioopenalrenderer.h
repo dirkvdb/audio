@@ -50,16 +50,18 @@ public:
     void stop(bool drain);
     void setVolume(int32_t volume);
     int32_t getVolume();
+    void setMute(bool enabled);
+    bool getMute();
     bool isPlaying();
 
 private:
-
     ALCdevice*          m_pAudioDevice;
     ALCcontext*         m_pAlcContext;
     ALuint              m_AudioSource;
     ALuint              m_AudioBuffers[NUM_BUFFERS];
-    int                 m_CurrentBuffer;
-    int                 m_Volume;
+    int32_t             m_CurrentBuffer;
+    int32_t             m_Volume;
+    bool                m_Muted;
     ALenum              m_AudioFormat;
     ALsizei             m_Frequency;
 

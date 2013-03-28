@@ -14,43 +14,23 @@
 //    along with this program; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#ifndef AUDIORENDERER_H
-#define AUDIORENDERER_H
+#ifndef AUDIO_READER_FACTORY_H
+#define AUDIO_READER_FACTORY_H
 
-#include "utils/types.h"
-#include "utils/signal.h"
+#include <string>
+
+namespace utils
+{
+    class IReader;
+}
 
 namespace audio
 {
 
-class Frame;
-struct Format;
-
-class IRenderer
+class ReaderFactory
 {
 public:
-    virtual ~IRenderer() {}
-
-    virtual void setFormat(const Format& format) = 0;
-
-    virtual void play() = 0;
-    virtual void pause() = 0;
-    virtual void resume() = 0;
-    virtual void stop(bool drain) = 0;
-    virtual void setVolume(int32_t volume) = 0;
-    virtual int32_t getVolume() = 0;
-    virtual void setMute(bool enabled) = 0;
-    virtual bool getMute() = 0;
-
-    virtual bool isPlaying() = 0;
-
-    virtual bool hasBufferSpace(uint32_t dataSize) = 0;
-    virtual void flushBuffers() = 0;
-    virtual void queueFrame(const Frame& frame) = 0;
-
-    virtual double getCurrentPts() = 0;
-    
-    utils::Signal<void(int32_t)>    VolumeChanged;
+    static utils::IReader* create(const std::string& uri);
 };
 
 }

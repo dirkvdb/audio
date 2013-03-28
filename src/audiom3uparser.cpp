@@ -14,45 +14,30 @@
 //    along with this program; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#ifndef AUDIORENDERER_H
-#define AUDIORENDERER_H
+#include "audio/audiom3uparser.h"
 
-#include "utils/types.h"
-#include "utils/signal.h"
+#include "utils/stringoperations.h"
+
+#include <sstream>
+#include <iostream>
+#include <algorithm>
+
+using namespace utils;
 
 namespace audio
 {
 
-class Frame;
-struct Format;
-
-class IRenderer
+std::vector<std::string> M3uParser::parseFileContents(const std::string& contents)
 {
-public:
-    virtual ~IRenderer() {}
-
-    virtual void setFormat(const Format& format) = 0;
-
-    virtual void play() = 0;
-    virtual void pause() = 0;
-    virtual void resume() = 0;
-    virtual void stop(bool drain) = 0;
-    virtual void setVolume(int32_t volume) = 0;
-    virtual int32_t getVolume() = 0;
-    virtual void setMute(bool enabled) = 0;
-    virtual bool getMute() = 0;
-
-    virtual bool isPlaying() = 0;
-
-    virtual bool hasBufferSpace(uint32_t dataSize) = 0;
-    virtual void flushBuffers() = 0;
-    virtual void queueFrame(const Frame& frame) = 0;
-
-    virtual double getCurrentPts() = 0;
+    std::string copy = contents;
+    stringops::dos2unix(copy);
+    auto lines = stringops::tokenize(copy, "\n");
     
-    utils::Signal<void(int32_t)>    VolumeChanged;
-};
+    lines.erase(std::remove_if(lines.begin(), lines.end(), [] (const std::string& line) {
+        return line.find("#") == 0 || stringops::trim(line).empty();
+    }), lines.end());
 
+    return lines;
 }
 
-#endif
+}

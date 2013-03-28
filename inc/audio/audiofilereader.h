@@ -14,43 +14,37 @@
 //    along with this program; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#ifndef AUDIORENDERER_H
-#define AUDIORENDERER_H
+#ifndef GEJENGEL_FILE_READER_H
+#define GEJENGEL_FILE_READER_H
 
-#include "utils/types.h"
-#include "utils/signal.h"
+#include <string>
+#include <fstream>
+
+#include "utils/readerinterface.h"
 
 namespace audio
 {
 
-class Frame;
-struct Format;
-
-class IRenderer
+class FileReader : public utils::IReader
 {
 public:
-    virtual ~IRenderer() {}
-
-    virtual void setFormat(const Format& format) = 0;
-
-    virtual void play() = 0;
-    virtual void pause() = 0;
-    virtual void resume() = 0;
-    virtual void stop(bool drain) = 0;
-    virtual void setVolume(int32_t volume) = 0;
-    virtual int32_t getVolume() = 0;
-    virtual void setMute(bool enabled) = 0;
-    virtual bool getMute() = 0;
-
-    virtual bool isPlaying() = 0;
-
-    virtual bool hasBufferSpace(uint32_t dataSize) = 0;
-    virtual void flushBuffers() = 0;
-    virtual void queueFrame(const Frame& frame) = 0;
-
-    virtual double getCurrentPts() = 0;
+    FileReader(const std::string& filename);
+    ~FileReader();
     
-    utils::Signal<void(int32_t)>    VolumeChanged;
+    void open(const std::string& filename);
+
+    uint64_t getContentLength();
+    uint64_t currentPosition();
+    bool eof();
+    std::string uri();
+    
+    void seekAbsolute(uint64_t position);
+    void seekRelative(uint64_t offset);
+    uint64_t read(uint8_t* pData, uint64_t size);
+
+private:
+    std::string         m_FileName;
+    std::ifstream       m_File;
 };
 
 }

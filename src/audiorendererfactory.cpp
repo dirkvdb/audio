@@ -23,15 +23,15 @@
 #endif
 
 #ifdef HAVE_OPENAL
-#include "openalrenderer.h"
+#include "audioopenalrenderer.h"
 #endif
 
 #ifdef HAVE_ALSA
-#include "alsarenderer.h"
+#include "audioalsarenderer.h"
 #endif
 
 #ifdef HAVE_PULSE
-#include "pulserenderer.h"
+#include "audiopulserenderer.h"
 #endif
 
 #include <stdexcept>

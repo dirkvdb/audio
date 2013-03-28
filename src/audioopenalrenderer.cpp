@@ -14,7 +14,7 @@
 //    along with this program; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#include "openalrenderer.h"
+#include "audioopenalrenderer.h"
 
 #include "audio/audioframe.h"
 #include "audio/audioformat.h"
@@ -36,6 +36,7 @@ OpenALRenderer::OpenALRenderer()
 , m_AudioSource(0)
 , m_CurrentBuffer(0)
 , m_Volume(100)
+, m_Muted(false)
 , m_AudioFormat(AL_FORMAT_STEREO16)
 , m_Frequency(0)
 {
@@ -197,12 +198,32 @@ void OpenALRenderer::setVolume(int32_t volume)
 {
     numericops::clip(m_Volume, 0, 100);
     m_Volume = volume;
-    alSourcef(m_AudioSource, AL_GAIN, m_Volume / 100.f);
+    
+    if (!m_Muted)
+    {
+        alSourcef(m_AudioSource, AL_GAIN, m_Volume / 100.f);
+    }
 }
 
 int32_t OpenALRenderer::getVolume()
 {
     return m_Volume;
+}
+
+void OpenALRenderer::setMute(bool enabled)
+{
+    if (enabled == m_Muted)
+    {
+        return;
+    }
+    
+    m_Muted = enabled;
+    alSourcef(m_AudioSource, AL_GAIN, m_Muted ? 0.f : m_Volume / 100.f);
+}
+
+bool OpenALRenderer::getMute()
+{
+    return m_Muted;
 }
 
 double OpenALRenderer::getCurrentPts()
