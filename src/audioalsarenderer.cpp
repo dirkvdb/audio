@@ -14,7 +14,7 @@
 //    along with this program; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#include "alsarenderer.h"
+#include "audioalsarenderer.h"
 #include "audio/audioframe.h"
 
 #include <stdexcept>
@@ -38,6 +38,8 @@ AlsaRenderer::AlsaRenderer()
 , m_PeriodSize(0)
 , m_BufferTime(1000000) //1 second buffer
 , m_PeriodTime(200000)
+, m_Volume(100)
+, m_Muted(false)
 , m_FrameSize(0)
 , m_LastPts(0.0)
 , m_SupportPause(true)
@@ -265,6 +267,30 @@ void AlsaRenderer::setVolume(int32_t volume)
 int32_t AlsaRenderer::getVolume()
 {
     return m_Volume;
+}
+
+void AlsaRenderer::setMute(bool enabled)
+{
+    if (enabled == m_Muted)
+    {
+        return;
+    }
+    
+    m_Muted = enabled;
+    if (m_Muted)
+    {
+        m_VolumeAtMute  = m_Volume;
+        m_Volume        = 0;
+    }
+    else
+    {
+        m_Volume = m_VolumeAtMute;
+    }
+}
+
+bool AlsaRenderer::getMute()
+{
+    return m_Muted;
 }
 
 snd_pcm_state_t AlsaRenderer::getDeviceStatus()

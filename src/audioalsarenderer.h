@@ -42,6 +42,8 @@ public:
     void stop(bool drain);
     void setVolume(int32_t volume);
     int32_t getVolume();
+    void setMute(bool enabled);
+    bool getMute();
 
     bool hasBufferSpace(uint32_t dataSize);
     void flushBuffers();
@@ -67,7 +69,9 @@ private:
 
     Format                  m_Format;
     int                     m_Volume;
-
+    int                     m_VolumeAtMute;
+    bool                    m_Muted;
+    
     int                     m_FrameSize;
     double                  m_LastPts;
 

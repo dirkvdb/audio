@@ -1,5 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
+ADD_DEFINITIONS("-D__STDC_CONSTANT_MACROS")
+
 FIND_PACKAGE(PkgConfig)
 PKG_CHECK_MODULES(PULSEAUDIO libpulse)
 PKG_CHECK_MODULES(FLAC flac++)
@@ -74,7 +76,9 @@ SET (AUDIO_SRC_LIST
     inc/audio/audioformat.h
     inc/audio/audioframe.h              src/audioframe.cpp
     inc/audio/audiompegutils.h          src/audiompegutils.cpp
-    inc/audio/audioplayback.h           src/audioplayback.cpp
+    inc/audio/audioplaybackinterface.h
+    inc/audio/audioplaybackfactory.h    src/audioplaybackfactory.cpp
+    src/audioplayback.h                 src/audioplayback.cpp
     inc/audio/audioplaylistinterface.h
     inc/audio/audioreaderfactory.h      src/audioreaderfactory.cpp
     inc/audio/audiorenderer.h

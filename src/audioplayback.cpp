@@ -14,7 +14,7 @@
 //    along with this program; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#include "audio/audioplayback.h"
+#include "audioplayback.h"
 
 #include <iomanip>
 #include <cmath>
@@ -40,23 +40,20 @@ using namespace utils;
 namespace audio
 {
 
-Playback::Playback(IPlaylist& playlist)
+Playback::Playback(IPlaylist& playlist, const std::string& audioOutput)
 : m_Playlist(playlist)
 , m_Destroy(false)
 , m_Stop(false)
 , m_NewTrackStarted(false)
-, m_State(State::Stopped)
+, m_State(PlaybackState::Stopped)
 , m_SkipTrack(false)
 , m_SeekOccured(false)
 , m_CurrentPts(0)
 {
     try
     {
-        // TODO: backend from settings
-        //core.getSettings().get("AudioBackend")
-        
-        m_pAudioRenderer.reset(audio::RendererFactory::create("doozy", "OpenAL"));
-        m_pAudioRenderer->VolumeChanged.connect(std::bind(&Playback::setVolume, this, _1), this);
+        m_pAudioRenderer.reset(audio::RendererFactory::create("doozy", audioOutput));
+        m_pAudioRenderer->VolumeChanged.connect([this] (int32_t volume) { VolumeChanged(volume); }, this);
     }
     catch (std::exception&)
     {
@@ -130,6 +127,7 @@ bool Playback::startNewTrack()
         //m_CurrentTrack.durationInSec = duration;
     }
 
+    NewTrackStarted(track);
     m_NewTrackStarted = true;
 
     auto format = m_pAudioDecoder->getAudioFormat();
@@ -210,7 +208,7 @@ void Playback::playback()
 
         m_pAudioRenderer->flushBuffers();
 
-        if (m_State == State::Playing && !m_pAudioRenderer->isPlaying())
+        if (m_State == PlaybackState::Playing && !m_pAudioRenderer->isPlaying())
         {
             log::debug("Kick renderer");
             std::lock_guard<std::mutex> lock(m_PlaybackMutex);
@@ -250,7 +248,7 @@ void Playback::sendProgressIfNeeded()
     if ((static_cast<int>(pts) != static_cast<int>(m_CurrentPts)))
     {
         m_CurrentPts = pts;
-        // TODO: send progressevent
+        ProgressChanged(m_CurrentPts);
     }
 }
 
@@ -258,22 +256,22 @@ void Playback::play()
 {
     std::lock_guard<std::mutex> lock(m_PlaybackMutex);
 
-    if (!m_pAudioRenderer || m_State == State::Playing)
+    if (!m_pAudioRenderer || m_State == PlaybackState::Playing)
     {
         return;
     }
 
-    if (m_State == State::Stopped)
+    if (m_State == PlaybackState::Stopped)
     {
         m_PlaybackCondition.notify_all();
     }
-    else if (m_State == State::Paused)
+    else if (m_State == PlaybackState::Paused)
     {
         m_SeekOccured ? m_pAudioRenderer->play() : m_pAudioRenderer->resume();
-        setPlaybackState(State::Playing);
+        setPlaybackState(PlaybackState::Playing);
     }
     
-    setPlaybackState(State::Playing);
+    setPlaybackState(PlaybackState::Playing);
 }
 
 void Playback::pause()
@@ -282,7 +280,7 @@ void Playback::pause()
     {
         std::lock_guard<std::mutex> lock(m_PlaybackMutex);
         m_pAudioRenderer->pause();
-        setPlaybackState(State::Paused);
+        setPlaybackState(PlaybackState::Paused);
     }
 }
 
@@ -300,7 +298,7 @@ void Playback::stopPlayback(bool drain)
 
         std::lock_guard<std::mutex> lock(m_PlaybackMutex);
         m_pAudioRenderer->stop(drain);
-        setPlaybackState(State::Stopped);
+        setPlaybackState(PlaybackState::Stopped);
         m_SeekOccured = false;
         m_NewTrackStarted = false;
     }
@@ -308,7 +306,7 @@ void Playback::stopPlayback(bool drain)
 
 void Playback::next()
 {
-    if (!m_pAudioRenderer || m_SkipTrack || m_State == State::Stopped)
+    if (!m_pAudioRenderer || m_SkipTrack || m_State == PlaybackState::Stopped)
     {
         //previous skip not processed yet or we are stopped
         return;
@@ -319,7 +317,7 @@ void Playback::next()
     m_SkipTrack = true;
     m_pAudioRenderer->stop(false);
     m_pAudioRenderer->flushBuffers();
-    setPlaybackState(State::Playing);
+    setPlaybackState(PlaybackState::Playing);
 
     m_CurrentPts = 0.0;
 }
@@ -328,12 +326,12 @@ void Playback::prev()
 {
 }
 
-bool Playback::isPaused()
+bool Playback::isPaused() const
 {
-    return m_State == State::Paused;
+    return m_State == PlaybackState::Paused;
 }
 
-bool Playback::isPlaying()
+bool Playback::isPlaying() const
 {
     return m_pAudioRenderer ? m_pAudioRenderer->isPlaying() : false;
 }
@@ -366,17 +364,17 @@ void Playback::seek(double seconds)
     m_NewTrackStarted = false;
 }
 
-double Playback::getCurrentTime()
+double Playback::getCurrentTime() const
 {
     return m_CurrentPts;
 }
 
-double Playback::getDuration()
+double Playback::getDuration() const
 {
     return m_pAudioDecoder ? static_cast<double>(m_pAudioDecoder->getDuration()) : 0.0;
 }
 
-Playback::State Playback::getState() const
+PlaybackState Playback::getState() const
 {
     return m_State;
 }
@@ -387,6 +385,7 @@ void Playback::setVolume(int32_t volume)
     {
         std::lock_guard<std::mutex> lock(m_PlaybackMutex);
         m_pAudioRenderer->setVolume(volume);
+        VolumeChanged(volume);
     }
 }
 
@@ -411,7 +410,12 @@ bool Playback::getMute() const
     return m_pAudioRenderer ? m_pAudioRenderer->getMute() : false;
 }
 
-std::set<Playback::Action> Playback::getAvailableActions() const
+std::string Playback::getTrack() const
+{
+    return m_CurrentTrack;
+}
+
+std::set<PlaybackAction> Playback::getAvailableActions() const
 {
     std::lock_guard<std::mutex> lock(m_PlaybackMutex);
     return m_AvailableActions;
@@ -445,36 +449,36 @@ void Playback::playbackLoop()
     }
 }
 
-void Playback::setPlaybackState(State state)
+void Playback::setPlaybackState(PlaybackState state)
 {
     if (m_State != state)
     {
         m_State = state;
         PlaybackStateChanged(state);
         
-        std::set<Action> availableActions;
+        std::set<PlaybackAction> availableActions;
         
         switch (state)
         {
-        case State::Playing:
+        case PlaybackState::Playing:
         {
-            availableActions.insert(Action::Stop);
-            availableActions.insert(Action::Pause);
+            availableActions.insert(PlaybackAction::Stop);
+            availableActions.insert(PlaybackAction::Pause);
             if (m_Playlist.getNumberOfTracks() > 0)
             {
-                availableActions.insert(Action::Next);
+                availableActions.insert(PlaybackAction::Next);
             }
             
             break;
         }
-        case State::Paused:
-            availableActions.insert(Action::Stop);
-            availableActions.insert(Action::Play);
+        case PlaybackState::Paused:
+            availableActions.insert(PlaybackAction::Stop);
+            availableActions.insert(PlaybackAction::Play);
             break;
-        case State::Stopped:
+        case PlaybackState::Stopped:
             if (!m_CurrentTrack.empty())
             {
-                availableActions.insert(Action::Play);
+                availableActions.insert(PlaybackAction::Play);
             }
             break;
         default:

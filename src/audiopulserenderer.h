@@ -48,6 +48,8 @@ public:
     void stop(bool drain);
     void setVolume(int32_t volume);
     int32_t getVolume();
+    void setMute(bool enabled);
+    bool getMute();
 
     bool isPlaying();
 
@@ -77,6 +79,8 @@ private:
     Format                      m_AudioFormat;
     pa_cvolume                  m_Volume;
     int32_t                     m_VolumeInt;
+    int32_t                     m_VolumeAtMute;
+    bool                        m_Muted;
     bool                        m_IsPlaying;
 
     double                      m_LastPts;

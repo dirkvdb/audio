@@ -14,7 +14,7 @@
 //    along with this program; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#include "pulserenderer.h"
+#include "audiopulserenderer.h"
 
 #include "audio/audioframe.h"
 #include "utils/numericoperations.h"
@@ -38,6 +38,8 @@ PulseRenderer::PulseRenderer(const std::string& name)
 , m_pMainloopApi(nullptr)
 , m_pStream(nullptr)
 , m_VolumeInt(0)
+, m_VolumeAtMute(0)
+, m_Muted(false)
 , m_IsPlaying(false)
 , m_LastPts(0.0)
 , m_Latency(0)
@@ -283,6 +285,35 @@ void PulseRenderer::setVolume(int32_t volume)
     }
 }
 
+int32_t PulseRenderer::getVolume()
+{
+    return m_VolumeInt;
+}
+
+void PulseRenderer::setMute(bool enabled)
+{
+    if (m_Muted == enabled)
+    {
+        return;
+    }
+    
+    m_Muted = enabled;
+    if (m_Muted)
+    {
+        m_VolumeAtMute  = m_VolumeInt;
+        setVolume(0);
+    }
+    else
+    {
+        setVolume(m_VolumeAtMute);
+    }
+}
+
+bool PulseRenderer::getMute()
+{
+    return m_Muted;
+}
+
 void PulseRenderer::contextSubscriptionCb(pa_context* pContext, pa_subscription_event_type_t type, uint32_t index, void* pData)
 {
     if ((type & PA_SUBSCRIPTION_EVENT_CHANGE) && (type & PA_SUBSCRIPTION_EVENT_SINK_INPUT))
@@ -327,11 +358,6 @@ void PulseRenderer::sinkInputInfoCb(pa_context* pContext, const pa_sink_input_in
             pRenderer->VolumeChanged(volume);
         }
     }
-}
-
-int32_t PulseRenderer::getVolume()
-{
-    return m_VolumeInt;
 }
 
 void PulseRenderer::streamUpdateTimingCb(pa_stream* pStream, int success, void* pData)
