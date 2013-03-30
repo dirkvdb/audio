@@ -50,6 +50,8 @@ MadDecoder::MadDecoder(const std::string& uri)
 , m_RandomValueR(0)
 , m_pReader(ReaderFactory::create(uri))
 {
+    m_pReader->open(uri);
+    
     m_FileSize = static_cast<uint32_t>(m_pReader->getContentLength());
 
     if (!readHeaders())

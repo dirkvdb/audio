@@ -28,9 +28,6 @@ namespace audio
 class FileReader : public utils::IReader
 {
 public:
-    FileReader(const std::string& filename);
-    ~FileReader();
-    
     void open(const std::string& filename);
 
     uint64_t getContentLength();

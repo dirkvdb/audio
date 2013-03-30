@@ -18,11 +18,9 @@
 #define AUDIO_READER_FACTORY_H
 
 #include <string>
+#include <vector>
 
-namespace utils
-{
-    class IReader;
-}
+#include "utils/readerinterface.h"
 
 namespace audio
 {
@@ -30,7 +28,11 @@ namespace audio
 class ReaderFactory
 {
 public:
+    static void registerBuilder(std::unique_ptr<utils::IReaderBuilder> builder);
     static utils::IReader* create(const std::string& uri);
+    
+private:
+    static std::vector<std::unique_ptr<utils::IReaderBuilder>>  m_Builders;
 };
 
 }

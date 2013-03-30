@@ -107,20 +107,6 @@ private:
 #endif
 };
 
-inline std::ostream& operator<< (std::ostream& os, const PlaybackAction& action)
-{
-    switch (action)
-    {
-        case PlaybackAction::Play:        return os << "Play";
-        case PlaybackAction::Pause:       return os << "Pause";
-        case PlaybackAction::Stop:        return os << "Stop";
-        case PlaybackAction::Prev:        return os << "Previous";
-        case PlaybackAction::Next:        return os << "Next";
-    }
-    
-    return os;
-}
-
 }
 
 #endif

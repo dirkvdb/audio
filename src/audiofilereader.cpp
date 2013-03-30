@@ -21,15 +21,6 @@
 namespace audio
 {
 
-FileReader::FileReader(const std::string& filename)
-{
-    open(filename);
-}
-    
-FileReader::~FileReader() 
-{
-}
-
 void FileReader::open(const std::string& filename)
 {
     m_FileName = filename;

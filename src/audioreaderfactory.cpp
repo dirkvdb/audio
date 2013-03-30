@@ -23,28 +23,28 @@
 
 #include "audioconfig.h"
 
-#ifdef HAVE_UPNP
-    #include "audiohttpreader.h"
-#endif
-
 namespace audio
 {
 
+std::vector<std::unique_ptr<utils::IReaderBuilder>> ReaderFactory::m_Builders;
+
+void ReaderFactory::registerBuilder(std::unique_ptr<utils::IReaderBuilder> builder)
+{
+    m_Builders.push_back(std::move(builder));
+}
+
 utils::IReader* ReaderFactory::create(const std::string& uri)
 {
-	utils::log::info("ReaderFactory: %s", uri);
-    if (uri.substr(0, 7) == "http://")
+    for (auto& builder : m_Builders)
     {
-#ifdef HAVE_UPNP
-        auto reader = new HttpReader();
-        reader->open(uri);
-        return reader;
-#else
-        throw std::logic_error("Not compiled with support for urls as input");
-#endif
+        if (builder->supportsUri(uri))
+        {
+            return builder->build(uri);
+        }
     }
 
-    return new FileReader(uri);
+    // by default just try to read it from the filesystem
+    return new FileReader();
 }
 
 }

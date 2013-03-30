@@ -7,5 +7,4 @@
 #cmakedefine HAVE_MAD 1
 #cmakedefine HAVE_FLAC 1
 #cmakedefine HAVE_FFMPEG 1
-#cmakedefine HAVE_UPNP 1
 #endif

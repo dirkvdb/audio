@@ -36,6 +36,8 @@ FlacDecoder::FlacDecoder(const std::string& uri)
 , m_NumSamples(0)
 , m_pReader(ReaderFactory::create(uri))
 {
+    m_pReader->open(uri);
+
     set_md5_checking(true);
 
     FLAC__StreamDecoderInitStatus initStatus = init();
