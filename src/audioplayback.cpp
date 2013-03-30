@@ -124,7 +124,7 @@ bool Playback::startNewTrack()
     uint32_t duration = static_cast<uint32_t>(m_pAudioDecoder->getDuration());
     if (duration != 0)
     {
-        //m_CurrentTrack.durationInSec = duration;
+        m_Duration = duration;
     }
 
     NewTrackStarted(track);
@@ -185,6 +185,7 @@ void Playback::playback()
                 }
 
                 m_pAudioRenderer->queueFrame(m_AudioFrame);
+                frameConsumed = true;
                 
                 #ifdef DUMP_TO_WAVE
                 dumpToWav(m_AudioFrame);

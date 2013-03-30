@@ -93,6 +93,7 @@ private:
     bool                                    m_SkipTrack;
     bool                                    m_SeekOccured;
     double                                  m_CurrentPts;
+    double                                  m_Duration;
     audio::Frame                            m_AudioFrame;
     std::set<PlaybackAction>                m_AvailableActions;
     std::string                             m_CurrentTrack;
