@@ -149,61 +149,64 @@ void Playback::playback()
     {
         return;
     }
-
-    m_pAudioRenderer->play();
+    
+    assert(m_pAudioDecoder);
     
     bool frameDecoded = false;
-    bool frameConsumed = true;
+    bool firstFrame = true;
 
     while (!m_Stop)
     {
-        
-        if (m_pAudioDecoder && frameConsumed)
-        {
-            std::lock_guard<std::recursive_mutex> lock(m_DecodeMutex);
-            frameDecoded = m_pAudioDecoder->decodeAudioFrame(m_AudioFrame);
-            frameConsumed = !frameDecoded;
-        }
-        
-        while (frameDecoded && !m_Stop && !isPaused() && rendererHasSpace(m_AudioFrame.getDataSize()))
+        while (!m_Stop && !isPaused() && rendererHasSpace(m_AudioFrame.getDataSize()))
         {
             {
-                std::lock_guard<std::mutex> lock(m_PlaybackMutex);
-                if (m_SkipTrack)
-                {
-                    if (!startNewTrack())
-                    {
-                        return;
-                    }
-                    m_pAudioRenderer->play();
-                    m_SkipTrack = false;
-                }
-
-                if (isPaused())
-                {
-                    break;
-                }
-
-                m_pAudioRenderer->queueFrame(m_AudioFrame);
-                frameConsumed = true;
-                
-                #ifdef DUMP_TO_WAVE
-                dumpToWav(m_AudioFrame);
-                #endif
-            }
-
-            sendProgressIfNeeded();
-            
-            {
+                // decode the first frame
                 std::lock_guard<std::recursive_mutex> lock(m_DecodeMutex);
                 frameDecoded = m_pAudioDecoder->decodeAudioFrame(m_AudioFrame);
-                frameConsumed = !frameDecoded;
             }
+        
+            if (!frameDecoded)
+            {
+                // we could not decode a frame, end of file probably
+                break;
+            }
+            
+            if (m_SkipTrack)
+            {
+                if (!startNewTrack())
+                {
+                    return;
+                }
+
+                firstFrame = true;
+                m_SkipTrack = false;
+            }
+
+            if (isPaused())
+            {
+                break;
+            }
+
+            std::lock_guard<std::mutex> lock(m_PlaybackMutex);
+            m_pAudioRenderer->queueFrame(m_AudioFrame);
+            
+            if (firstFrame)
+            {
+                // Start the renderer after adding the first frame
+                firstFrame = false;
+                m_pAudioRenderer->play();
+            }
+            
+            #ifdef DUMP_TO_WAVE
+            dumpToWav(m_AudioFrame);
+            #endif
+
+            sendProgressIfNeeded();
         }
         
         if (!frameDecoded && !startNewTrack())
         {
-            log::debug("Stop it %d %d", frameDecoded, frameConsumed);
+            log::debug("Stop it %d", frameDecoded);
             return;
         }
 
@@ -212,6 +215,7 @@ void Playback::playback()
         if (m_State == PlaybackState::Playing && !m_pAudioRenderer->isPlaying())
         {
             log::debug("Kick renderer");
+            
             std::lock_guard<std::mutex> lock(m_PlaybackMutex);
             m_pAudioRenderer->play();
         }
