@@ -57,35 +57,35 @@ public:
 private:
     bool readDataIfNecessary();
     bool synchronize();
-    bool readHeaders();
+    bool readHeaders(utils::IReader& reader);
     bool decodeAudioFrame(Frame& audioFrame, bool processSamples);
     
-    uint32_t                    m_FileSize;
-    mad_stream                  m_MadStream;
-    mad_frame                   m_MadFrame;
-    mad_synth                   m_MadSynth;
-    mad_timer_t                 m_TrackPos;
+    uint32_t                        m_FileSize;
+    mad_stream                      m_MadStream;
+    mad_frame                       m_MadFrame;
+    mad_synth                       m_MadSynth;
+    mad_timer_t                     m_TrackPos;
 
-    uint32_t                    m_Duration;
-    uint32_t                    m_Id3Size;
-    uint32_t                    m_InputBufSize;
+    uint32_t                        m_Duration;
+    uint32_t                        m_Id3Size;
+    uint32_t                        m_InputBufSize;
 
-    bool                        m_FirstFrame;
+    bool                            m_FirstFrame;
     
-    MpegUtils::MpegHeader       m_MpegHeader;
-    MpegUtils::XingHeader       m_XingHeader;
-    MpegUtils::LameHeader       m_LameHeader;
+    MpegUtils::MpegHeader           m_MpegHeader;
+    MpegUtils::XingHeader           m_XingHeader;
+    MpegUtils::LameHeader           m_LameHeader;
     
-    std::vector<uint8_t>        m_InputBuffer;
-    std::vector<uint8_t>        m_OutputBuffer;
+    std::vector<uint8_t>            m_InputBuffer;
+    std::vector<uint8_t>            m_OutputBuffer;
 
-    mad_fixed_t                 m_DitherErrorL[3];
-    mad_fixed_t                 m_DitherErrorR[3];
+    mad_fixed_t                     m_DitherErrorL[3];
+    mad_fixed_t                     m_DitherErrorR[3];
     
-    mad_fixed_t                 m_RandomValueL;
-    mad_fixed_t                 m_RandomValueR;
+    mad_fixed_t                     m_RandomValueL;
+    mad_fixed_t                     m_RandomValueR;
 
-    std::unique_ptr<utils::IReader>    m_pReader;
+    std::unique_ptr<utils::IReader> m_pReader;
 };
 
 }

@@ -28,7 +28,7 @@ class IPlaylist
 public:
     virtual ~IPlaylist() {}
 
-    virtual bool getNextTrack(std::string& track) = 0;
+    virtual bool dequeueNextTrack(std::string& track) = 0;
     virtual size_t getNumberOfTracks() const = 0 ;
 };
 

@@ -1,5 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
+ENABLE_TESTING()
+
 ADD_DEFINITIONS("-D__STDC_CONSTANT_MACROS")
 
 FIND_PACKAGE(PkgConfig)
@@ -50,6 +52,7 @@ SET (AUDIO_INCLUDE_DIRS
 )
 SET (AUDIO_LIBRARY_DIRS
     "${CMAKE_CURRENT_BINARY_DIR}"
+    ${FFMPEG_LIBRARY_DIRS}
 )
 SET (AUDIO_LIBRARIES audio
     ${OPENAL_LIBRARY}
@@ -66,6 +69,7 @@ SET (AUDIO_SRC_LIST
     inc/audio/audiodecoder.h
     inc/audio/audiodecoderfactory.h     src/audiodecoderfactory.cpp
     inc/audio/audiofilereader.h         src/audiofilereader.cpp
+    inc/audio/audiobufferedreader.h     src/audiobufferedreader.cpp
     inc/audio/audioformat.h
     inc/audio/audioframe.h              src/audioframe.cpp
     inc/audio/audiompegutils.h          src/audiompegutils.cpp
@@ -119,3 +123,5 @@ IF (UNIX OR APPLE)
 ENDIF (UNIX OR APPLE)
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/audioconfig.h.in ${CMAKE_BINARY_DIR}/audioconfig.h)
+
+ADD_SUBDIRECTORY(test)

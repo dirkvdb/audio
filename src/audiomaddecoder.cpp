@@ -24,6 +24,7 @@
 #include "audio/audioreaderfactory.h"
 #include "audio/audioframe.h"
 #include "audio/audioformat.h"
+#include "audio/audiobufferedreader.h"
 #include "utils/log.h"
 #include "utils/readerinterface.h"
 #include "utils/fileoperations.h"
@@ -50,19 +51,21 @@ MadDecoder::MadDecoder(const std::string& uri)
 , m_RandomValueR(0)
 , m_pReader(ReaderFactory::create(uri))
 {
-    m_pReader->open(uri);
+    // use a bufferedreader to read the header info, it involves lots of small reads
+    BufferedReader bufferedReader(*m_pReader, 256);
+    bufferedReader.open(uri);
     
-    m_FileSize = static_cast<uint32_t>(m_pReader->getContentLength());
+    m_FileSize = static_cast<uint32_t>(bufferedReader.getContentLength());
 
-    if (!readHeaders())
+    if (!readHeaders(bufferedReader))
     {
-        throw logic_error("File is not an mp3 file: " + m_pReader->uri());
+        throw logic_error("File is not an mp3 file: " + bufferedReader.uri());
     }
 
     log::debug("Mad Audio format: bits (16) rate (%d) numChannels (%d) bitrate (%d)", m_MpegHeader.sampleRate, m_MpegHeader.numChannels, m_MpegHeader.bitRate);
     log::debug("Encoderdelay: %d ZeroPadding: %d", m_LameHeader.encoderDelay, m_LameHeader.zeroPadding);
 
-    m_pReader->seekAbsolute(m_Id3Size);
+    bufferedReader.seekAbsolute(m_Id3Size);
 
     mad_stream_init(&m_MadStream);
     mad_frame_init(&m_MadFrame);
@@ -378,16 +381,16 @@ bool MadDecoder::decodeAudioFrame(Frame& frame, bool processSamples)
     return true;
 }
 
-bool MadDecoder::readHeaders()
+bool MadDecoder::readHeaders(utils::IReader& reader)
 {
-    m_Id3Size = MpegUtils::skipId3Tag(*m_pReader);
+    m_Id3Size = MpegUtils::skipId3Tag(reader);
     
     uint32_t xingPos;
-    if (MpegUtils::readMpegHeader(*m_pReader, m_MpegHeader, xingPos) == 0)
+    if (MpegUtils::readMpegHeader(reader, m_MpegHeader, xingPos) == 0)
     {
         log::debug("No mpeg header found, offset = %d", m_Id3Size);
         //try a bruteforce scan in the first meg to be really sure
-        if (MpegUtils::searchMpegHeader(*m_pReader, m_MpegHeader, m_Id3Size, xingPos) == 0)
+        if (MpegUtils::searchMpegHeader(reader, m_MpegHeader, m_Id3Size, xingPos) == 0)
         {
             return false;
         }
@@ -399,15 +402,15 @@ bool MadDecoder::readHeaders()
         return true;
     }
 
-    m_pReader->seekAbsolute(m_Id3Size + xingPos);
-    if (MpegUtils::readXingHeader(*m_pReader, m_XingHeader) == 0)
+    reader.seekAbsolute(m_Id3Size + xingPos);
+    if (MpegUtils::readXingHeader(reader, m_XingHeader) == 0)
     {
         log::debug("No xing header found");
         m_Duration = (m_FileSize - m_Id3Size) / (m_MpegHeader.bitRate * 125); //m_MpegHeader.bitRate / 8) * 1000
         return true;
     }
 
-    if (MpegUtils::readLameHeader(*m_pReader, m_LameHeader) == 0)
+    if (MpegUtils::readLameHeader(reader, m_LameHeader) == 0)
     {
         log::debug("No lame header found");
     }

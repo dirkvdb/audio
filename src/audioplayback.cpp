@@ -97,7 +97,7 @@ Playback::~Playback()
 bool Playback::startNewTrack()
 {
     std::string track;
-    if (!m_Playlist.getNextTrack(track))
+    if (!m_Playlist.dequeueNextTrack(track))
     {
         stopPlayback(true);
         return false;
@@ -190,19 +190,19 @@ void Playback::playback()
             std::lock_guard<std::mutex> lock(m_PlaybackMutex);
             m_pAudioRenderer->queueFrame(m_AudioFrame);
             
-            if (firstFrame)
-            {
-                // Start the renderer after adding the first frame
-                firstFrame = false;
-                m_pAudioRenderer->play();
-            }
-            
             #ifdef DUMP_TO_WAVE
             dumpToWav(m_AudioFrame);
             #endif
-
-            sendProgressIfNeeded();
         }
+        
+        if (firstFrame)
+        {
+            // Start the renderer after adding the first frame
+            firstFrame = false;
+            m_pAudioRenderer->play();
+        }
+        
+        sendProgressIfNeeded();
         
         if (!frameDecoded && !startNewTrack())
         {
@@ -219,8 +219,11 @@ void Playback::playback()
             std::lock_guard<std::mutex> lock(m_PlaybackMutex);
             m_pAudioRenderer->play();
         }
-
-        timeops::sleepMs(50);
+        else
+        {
+            // don't busy wait
+            timeops::sleepMs(50);
+        }
     }
 }
 
