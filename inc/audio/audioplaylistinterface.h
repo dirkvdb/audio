@@ -29,7 +29,7 @@ public:
     virtual ~IPlaylist() {}
 
     virtual bool dequeueNextTrack(std::string& track) = 0;
-    virtual size_t getNumberOfTracks() const = 0 ;
+    virtual size_t getNumberOfTracks() const = 0;
 };
 
 }

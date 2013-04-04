@@ -119,6 +119,7 @@ int main(int argc, char** argv)
         log::info("Lame header");
         log::info("-----------");
         log::info("Encoderdelay: %d", lameHeader.encoderDelay);
+        log::info("Encoderdelay (decoderdelay added): %d", lameHeader.encoderDelay + 528 + mpegHeader.samplesPerFrame);
         log::info("Zeropadding: %d", lameHeader.zeroPadding);
     }
     catch (std::exception& e)
