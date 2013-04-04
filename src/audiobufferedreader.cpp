@@ -17,6 +17,7 @@
 #include "audio/audiobufferedreader.h"
 
 #include <cassert>
+#include <cstring>
 #include <stdexcept>
 
 namespace audio
