@@ -28,7 +28,7 @@
 namespace audio
 {
 
-IPlayback* PlaybackFactory::create(const std::string& engine, const std::string& audioOutput, audio::IPlaylist& playlist)
+IPlayback* PlaybackFactory::create(const std::string& engine, const std::string& audioOutput, const std::string& audioDevice, audio::IPlaylist& playlist)
 {
     if (engine == "GStreamer")
     {
@@ -41,7 +41,7 @@ IPlayback* PlaybackFactory::create(const std::string& engine, const std::string&
 
     if (engine == "FFmpeg")
     {
-        return new audio::Playback(playlist, audioOutput);
+        return new audio::Playback(playlist, audioOutput, audioDevice);
     }
 
     throw std::logic_error("PlaybackFactory: Unsupported playback engine type provided: " + engine);

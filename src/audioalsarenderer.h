@@ -31,7 +31,7 @@ namespace audio
 class AlsaRenderer : public IRenderer
 {
 public:
-    AlsaRenderer();
+    AlsaRenderer(const std::string& deviceName);
     ~AlsaRenderer();
 
     void setFormat(const Format& format);

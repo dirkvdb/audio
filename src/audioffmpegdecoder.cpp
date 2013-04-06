@@ -76,9 +76,10 @@ void FFmpegDecoder::destroy()
 
     if (m_pFormatContext)
     {
-        av_close_input_file(m_pFormatContext);
-        m_pFormatContext = nullptr;
+        avformat_close_input(&m_pFormatContext);
     }
+    
+    avformat_network_deinit();
 
     av_free(m_pAudioBuffer);
 }
@@ -87,6 +88,7 @@ void FFmpegDecoder::initialize()
 {
     avcodec_register_all();
     av_register_all();
+    avformat_network_init();
 
 
 #if LIBAVCODEC_VERSION_MAJOR < 53
@@ -98,7 +100,7 @@ void FFmpegDecoder::initialize()
         throw logic_error("Could not open input file: " + m_Filepath);
     }
 
-    if (av_find_stream_info(m_pFormatContext) < 0)
+    if (avformat_find_stream_info(m_pFormatContext, nullptr) < 0)
     {
         throw logic_error("Could not find stream information in " + m_Filepath);
     }

@@ -43,7 +43,7 @@ class IPlaylist;
 class Playback : public IPlayback
 {
 public:
-    Playback(IPlaylist& playlist, const std::string& audioOutput);
+    Playback(IPlaylist& playlist, const std::string& audioOutput, const std::string& deviceName);
     virtual ~Playback();
 
     void play();

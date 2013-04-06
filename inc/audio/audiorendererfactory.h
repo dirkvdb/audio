@@ -27,7 +27,7 @@ class IRenderer;
 class RendererFactory
 {
 public:
-    static IRenderer* create(const std::string& name, const std::string& audioBackend);
+    static IRenderer* create(const std::string& applicationName, const std::string& audioBackend, const std::string& deviceName);
 };
 
 }

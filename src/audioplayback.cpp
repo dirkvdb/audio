@@ -40,7 +40,7 @@ using namespace utils;
 namespace audio
 {
 
-Playback::Playback(IPlaylist& playlist, const std::string& audioOutput)
+Playback::Playback(IPlaylist& playlist, const std::string& audioOutput, const std::string& deviceName)
 : m_Playlist(playlist)
 , m_Destroy(false)
 , m_Stop(false)
@@ -52,7 +52,7 @@ Playback::Playback(IPlaylist& playlist, const std::string& audioOutput)
 {
     try
     {
-        m_pAudioRenderer.reset(audio::RendererFactory::create("doozy", audioOutput));
+        m_pAudioRenderer.reset(audio::RendererFactory::create("doozy", audioOutput, deviceName));
         m_pAudioRenderer->VolumeChanged.connect([this] (int32_t volume) { VolumeChanged(volume); }, this);
     }
     catch (std::exception&)
@@ -276,7 +276,6 @@ void Playback::play()
     else if (m_State == PlaybackState::Paused)
     {
         m_SeekOccured ? m_pAudioRenderer->play() : m_pAudioRenderer->resume();
-        setPlaybackState(PlaybackState::Playing);
     }
     
     setPlaybackState(PlaybackState::Playing);

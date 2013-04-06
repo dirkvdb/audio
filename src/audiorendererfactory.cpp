@@ -39,7 +39,7 @@
 namespace audio
 {
 
-IRenderer* RendererFactory::create(const std::string& name, const std::string& audioBackend)
+IRenderer* RendererFactory::create(const std::string& applicationName, const std::string& audioBackend, const std::string& deviceName)
 {
     if (audioBackend == "OpenAL")
     {
@@ -53,7 +53,7 @@ IRenderer* RendererFactory::create(const std::string& name, const std::string& a
     if (audioBackend == "Alsa")
     {
 #ifdef HAVE_ALSA
-        return new AlsaRenderer();
+        return new AlsaRenderer(deviceName);
 #else
         throw std::logic_error("AudioRendererFactory: package was not compiled with Alsa support");
 #endif

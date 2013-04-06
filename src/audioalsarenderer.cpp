@@ -32,7 +32,7 @@ using namespace utils;
 namespace audio
 {
 
-AlsaRenderer::AlsaRenderer()
+AlsaRenderer::AlsaRenderer(const std::string& deviceName)
 : m_pAudioDevice(nullptr)
 , m_BufferSize(0)
 , m_PeriodSize(0)
@@ -45,8 +45,6 @@ AlsaRenderer::AlsaRenderer()
 , m_SupportPause(true)
 , m_Buffer(1024 * 1024)
 {
-    string deviceName = "default";
-
     throwOnError(snd_pcm_open(&m_pAudioDevice, deviceName.c_str(), SND_PCM_STREAM_PLAYBACK, 0), "Error opening PCM device " + deviceName);
 }
 
