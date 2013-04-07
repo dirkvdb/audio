@@ -62,6 +62,7 @@ private:
     int32_t             m_CurrentBuffer;
     int32_t             m_Volume;
     bool                m_Muted;
+    bool                m_FloatingPoint;
     ALenum              m_AudioFormat;
     ALsizei             m_Frequency;
 

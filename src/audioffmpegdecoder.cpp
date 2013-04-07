@@ -235,35 +235,63 @@ bool FFmpegDecoder::decodeAudioFrame(Frame& frame)
 
     try
     {
-        avcodec_get_frame_defaults(m_pAudioFrame);
-    
         int32_t gotFrame = 0;
-        int32_t bytesDecoded = avcodec_decode_audio4(m_pAudioStream->codec, m_pAudioFrame, &gotFrame, &packet);
-        if (bytesDecoded < 0)
+    
+        while (gotFrame == 0)
         {
-            throw std::logic_error("Error decoding audio frame");
-        }
+            avcodec_get_frame_defaults(m_pAudioFrame);
+        
+            
+            int32_t bytesDecoded = avcodec_decode_audio4(m_pAudioStream->codec, m_pAudioFrame, &gotFrame, &packet);
+            if (bytesDecoded < 0)
+            {
+                throw std::logic_error("Error decoding audio frame");
+            }
 
-        if (gotFrame == 0)
-        {
-            throw std::logic_error("No frame was decoded");
-        }
+            if (gotFrame == 0)
+            {
+                log::info("No frame was decoded");
+                if (readPacket(packet))
+                {
+                    continue;
+                }
+                
+                return frameDecoded;
+            }
 
-        if (m_pAudioFrame->pts != static_cast<int64_t>(AV_NOPTS_VALUE))
-        {
-            m_AudioClock = av_q2d(m_pAudioStream->time_base) * m_pAudioFrame->pts;
-        }
-        else
-        {
-            m_AudioClock += static_cast<double>(bytesDecoded) / (2 * m_pAudioStream->codec->channels * m_pAudioStream->codec->sample_rate);
-        }
+            if (m_pAudioFrame->pts != static_cast<int64_t>(AV_NOPTS_VALUE))
+            {
+                m_AudioClock = av_q2d(m_pAudioStream->time_base) * m_pAudioFrame->pts;
+            }
+            else
+            {
+                m_AudioClock += static_cast<double>(bytesDecoded) / (2 * m_pAudioStream->codec->channels * m_pAudioStream->codec->sample_rate);
+            }
+            
+            if (m_pAudioCodecContext->sample_fmt == AV_SAMPLE_FMT_FLTP && m_pAudioCodecContext->channels == 2)
+            {
+                // audio data is in seperate planes, merge them
+                frame.allocateData(m_pAudioFrame->linesize[0] * 2);
+                frame.setDataSize(m_pAudioFrame->linesize[0] * 2);
+                
+                float* pData = reinterpret_cast<float*>(frame.getFrameData());
+                for (int i = 0; i < m_pAudioFrame->linesize[0] / 4; ++i)
+                {
+                    *pData++ = *reinterpret_cast<float*>(m_pAudioFrame->data[0] + i*sizeof(float));
+                    *pData++ = *reinterpret_cast<float*>(m_pAudioFrame->data[1] + i*sizeof(float));
+                }
+            }
+            else
+            {
+                frame.setDataSize(m_pAudioFrame->linesize[0]);
+                frame.setFrameData(m_pAudioFrame->data[0]);
+            }
 
-        frame.setDataSize(m_pAudioFrame->linesize[0]);
-        frame.setFrameData(m_pAudioFrame->data[0]);
-        frame.setPts(m_AudioClock);
+            frame.setPts(m_AudioClock);
 
-        m_BytesPerFrame = max(m_BytesPerFrame, static_cast<uint32_t>(bytesDecoded));
-        frameDecoded = true;
+            m_BytesPerFrame = max(m_BytesPerFrame, static_cast<uint32_t>(bytesDecoded));
+            frameDecoded = true;
+        }
     }
     catch (std::exception& e)
     {
@@ -316,6 +344,11 @@ Format FFmpegDecoder::getAudioFormat()
         break;
     case AV_SAMPLE_FMT_S32:
         format.bits = 32;
+        break;
+    case AV_SAMPLE_FMT_FLT:
+    case AV_SAMPLE_FMT_FLTP:
+        format.bits = 32;
+        format.floatingPoint = true;
         break;
     default:
         format.bits = 0;

@@ -25,7 +25,7 @@ namespace audio
 struct Format
 {
     Format()
-    : bits(0), rate(0), numChannels(0), framesPerPacket(0)
+    : bits(0), rate(0), numChannels(0), framesPerPacket(0), floatingPoint(false)
     {}
     
     bool operator==(const Format& otherFormat) const
@@ -40,6 +40,7 @@ struct Format
     uint32_t rate;
     uint32_t numChannels;
     uint32_t framesPerPacket;
+    bool     floatingPoint;
 };
 
 }

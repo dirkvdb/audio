@@ -49,11 +49,11 @@ int main(int argc, char** argv)
 {
     try
     {
-        if (argc != 2)
-        {
-            log::error("Usage: %s filename", argv[0]);
-            return -1;
-        }
+//        if (argc != 2)
+//        {
+//            log::error("Usage: %s filename", argv[0]);
+//            return -1;
+//        }
         
         Playlist playlist;
         std::unique_ptr<IPlayback> playback(PlaybackFactory::create("FFmpeg", "OpenAL", "Default", playlist));
@@ -65,7 +65,8 @@ int main(int argc, char** argv)
             }
         }, playback.get());
         
-        playlist.addTrack(argv[1]);
+        //playlist.addTrack(argv[1]);
+        playlist.addTrack("/Users/dirk/How Low.m4a");
         
         usleep(10000);
         playback->play();

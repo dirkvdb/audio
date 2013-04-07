@@ -37,6 +37,7 @@ OpenALRenderer::OpenALRenderer()
 , m_CurrentBuffer(0)
 , m_Volume(100)
 , m_Muted(false)
+, m_FloatingPoint(false)
 , m_AudioFormat(AL_FORMAT_STEREO16)
 , m_Frequency(0)
 {
@@ -74,6 +75,8 @@ OpenALRenderer::~OpenALRenderer()
 
 void OpenALRenderer::setFormat(const Format& format)
 {
+    m_FloatingPoint = false;
+    
     switch (format.bits)
     {
     case 8:
@@ -81,6 +84,15 @@ void OpenALRenderer::setFormat(const Format& format)
         break;
     case 16:
         m_AudioFormat = format.numChannels == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
+        break;
+    case 32:
+        if (format.floatingPoint == false)
+        {
+            throw logic_error("OpenAlRenderer: unsupported format");
+        }
+        // we will do the conversion ourselves
+        m_AudioFormat = format.numChannels == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
+        m_FloatingPoint = true;
         break;
     default:
         throw logic_error("OpenAlRenderer: unsupported format");
@@ -104,8 +116,26 @@ bool OpenALRenderer::hasBufferSpace(uint32_t dataSize)
 
 void OpenALRenderer::queueFrame(const Frame& frame)
 {
-    assert(frame.getFrameData());
-    alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frame.getFrameData(), frame.getDataSize(), m_Frequency);
+    if (m_FloatingPoint)
+    {
+        std::vector<int16_t> frameData;
+        frameData.resize(frame.getDataSize() / 2);
+        
+        const float* pData = reinterpret_cast<float*>(frame.getFrameData());
+        for (int i = 0; i < frame.getDataSize() / sizeof(float); ++i)
+        {
+            float sample = numericops::clip(pData[i], -1.f, 1.f);
+            frameData[i] = sample * 32768.f;
+        }
+        
+        alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frameData.data(), frameData.size(), m_Frequency);
+    }
+    else
+    {
+        assert(frame.getFrameData());
+        alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frame.getFrameData(), frame.getDataSize(), m_Frequency);
+    }
+    
     alSourceQueueBuffers(m_AudioSource, 1, &m_AudioBuffers[m_CurrentBuffer]);
     m_PtsQueue.push_back(frame.getPts());
 

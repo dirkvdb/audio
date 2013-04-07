@@ -125,19 +125,33 @@ void AlsaRenderer::setFormat(const Format& format)
 
     log::debug("Format has changed %d %d %d %d", format.bits, format.rate, format.numChannels, format.framesPerPacket);
     snd_pcm_format_t formatType;
-    switch (format.bits)
+    if (!format.floatingPoint)
     {
-    case 32:
-        formatType = SND_PCM_FORMAT_S32_LE;
-        break;
-    case 24:
-        formatType = SND_PCM_FORMAT_S24_LE;
-        break;
-    case 16:
-        formatType = SND_PCM_FORMAT_S16_LE;
-        break;
-    default:
-        throw logic_error("AlsaRenderer: unsupported format");
+        switch (format.bits)
+        {
+        case 32:
+            formatType = SND_PCM_FORMAT_S32_LE;
+            break;
+        case 24:
+            formatType = SND_PCM_FORMAT_S24_LE;
+            break;
+        case 16:
+            formatType = SND_PCM_FORMAT_S16_LE;
+            break;
+        default:
+            throw logic_error("AlsaRenderer: unsupported format");
+        }
+    }
+    else
+    {
+        switch (format.bits)
+        {
+        case 32:
+            formatType = SND_PCM_FORMAT_FLOAT_LE;
+            break;
+        default:
+            throw logic_error("AlsaRenderer: unsupported format");   
+        }
     }
 
     setHardwareParams(formatType, format.numChannels, format.rate);
