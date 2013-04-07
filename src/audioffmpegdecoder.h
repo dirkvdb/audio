@@ -67,9 +67,7 @@ private:
     AVCodecContext*         m_pAudioCodecContext;
     AVCodec*                m_pAudioCodec;
     AVStream*               m_pAudioStream;
-    AVPacket                m_CurrentPacket;
-    AVPacket                m_CurrentPacketOffsets;
-    uint8_t*                m_pAudioBuffer;
+    AVFrame*                m_pAudioFrame;
     uint32_t                m_BytesPerFrame;
 };
 

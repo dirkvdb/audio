@@ -62,7 +62,7 @@ IRenderer* RendererFactory::create(const std::string& applicationName, const std
     if (audioBackend == "PulseAudio")
     {
 #ifdef HAVE_PULSE
-        return new PulseRenderer(name);
+        return new PulseRenderer(applicationName);
 #else
         throw std::logic_error("AudioRendererFactory: package was not compiled with PulseAudio support");
 #endif

@@ -46,7 +46,7 @@ FFmpegDecoder::FFmpegDecoder(const std::string& filepath)
 , m_pAudioCodecContext(nullptr)
 , m_pAudioCodec(nullptr)
 , m_pAudioStream(nullptr)
-, m_pAudioBuffer(nullptr)
+, m_pAudioFrame(nullptr)
 , m_BytesPerFrame(0)
 {
     log::debug("AVCodec Major: %d", LIBAVCODEC_VERSION_MAJOR);
@@ -62,10 +62,10 @@ FFmpegDecoder::~FFmpegDecoder()
 void FFmpegDecoder::destroy()
 {
     m_BytesPerFrame = 0;
-
-    if (m_CurrentPacket.data)
+    
+    if (m_pAudioFrame)
     {
-        av_free_packet(&m_CurrentPacket);
+        avcodec_free_frame(&m_pAudioFrame);
     }
 
     if (m_pAudioCodecContext)
@@ -80,8 +80,6 @@ void FFmpegDecoder::destroy()
     }
     
     avformat_network_deinit();
-
-    av_free(m_pAudioBuffer);
 }
 
 void FFmpegDecoder::initialize()
@@ -162,17 +160,11 @@ void FFmpegDecoder::initializeAudio()
     {
         throw logic_error("Could not open audio codec for " + m_Filepath);
     }
+    
+    m_pAudioFrame = avcodec_alloc_frame();
 
     Format format = getAudioFormat();
     m_BytesPerFrame = format.framesPerPacket * (format.bits / 8) * format.numChannels;
-
-    m_CurrentPacket.data = nullptr;
-    m_CurrentPacket.size = 0;
-
-    m_CurrentPacketOffsets.data = nullptr;
-    m_CurrentPacketOffsets.size = 0;
-
-    m_pAudioBuffer = reinterpret_cast<uint8_t*>(av_malloc((AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2));
 }
 
 double FFmpegDecoder::getProgress()
@@ -223,10 +215,6 @@ void FFmpegDecoder::seek(::int64_t timestamp)
     {
         m_AudioClock = static_cast<double>(timestamp) / AV_TIME_BASE;
         avcodec_flush_buffers(m_pFormatContext->streams[m_AudioStream]->codec);
-        m_CurrentPacket.data = nullptr;
-        m_CurrentPacket.size = 0;
-        m_CurrentPacketOffsets.data = nullptr;
-        m_CurrentPacketOffsets.size = 0;
     }
     else
     {
@@ -237,72 +225,60 @@ void FFmpegDecoder::seek(::int64_t timestamp)
 
 bool FFmpegDecoder::decodeAudioFrame(Frame& frame)
 {
-    for (;;)
+    bool frameDecoded = false;
+    
+    AVPacket packet;
+    if (!readPacket(packet))
     {
-        while (m_CurrentPacketOffsets.size > 0)
-        {
-            int32_t dataSize = (AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2;
-
-#if LIBAVCODEC_VERSION_MAJOR < 53
-            int32_t bytesDecoded = avcodec_decode_audio2(m_pAudioStream->codec, reinterpret_cast<int16_t*>(m_pAudioBuffer), &dataSize, m_CurrentPacketOffsets.data, m_CurrentPacketOffsets.size);
-#else
-            int32_t bytesDecoded = avcodec_decode_audio3(m_pAudioStream->codec, reinterpret_cast<int16_t*>(m_pAudioBuffer), &dataSize, &m_CurrentPacketOffsets);
-#endif
-            if (bytesDecoded < 0)
-            {
-                log::error("Error decoding audio frame");
-                m_CurrentPacketOffsets.size = 0;
-                continue;
-            }
-
-            m_CurrentPacketOffsets.data += bytesDecoded;
-            m_CurrentPacketOffsets.size -= bytesDecoded;
-
-            if (dataSize <= 0)
-            {
-                continue;
-            }
-
-            if (m_CurrentPacket.pts != static_cast<int64_t>(0x8000000000000000LL)) //AV_NOPTS_VALUE doesn't compile
-            {
-                m_AudioClock = av_q2d(m_pAudioStream->time_base) * m_CurrentPacket.pts;
-            }
-            else
-            {
-                m_AudioClock += static_cast<double>(dataSize) / (2 * m_pAudioStream->codec->channels * m_pAudioStream->codec->sample_rate);
-            }
-
-            frame.setDataSize(dataSize);
-            frame.setFrameData(m_pAudioBuffer);
-            frame.setPts(m_AudioClock);
-
-            m_BytesPerFrame = max(m_BytesPerFrame, static_cast<uint32_t>(dataSize));
-
-            return true;
-        }
-
-        if (m_CurrentPacket.data)
-        {
-            av_free_packet(&m_CurrentPacket);
-        }
-
-        if (!readPacket(m_CurrentPacket))
-        {
-            return false;
-        }
-
-        m_CurrentPacketOffsets.data = m_CurrentPacket.data;
-        m_CurrentPacketOffsets.size = m_CurrentPacket.size;
+        return frameDecoded;
     }
 
-    return false;
+    try
+    {
+        avcodec_get_frame_defaults(m_pAudioFrame);
+    
+        int32_t gotFrame = 0;
+        int32_t bytesDecoded = avcodec_decode_audio4(m_pAudioStream->codec, m_pAudioFrame, &gotFrame, &packet);
+        if (bytesDecoded < 0)
+        {
+            throw std::logic_error("Error decoding audio frame");
+        }
+
+        if (gotFrame == 0)
+        {
+            throw std::logic_error("No frame was decoded");
+        }
+
+        if (m_pAudioFrame->pts != static_cast<int64_t>(AV_NOPTS_VALUE))
+        {
+            m_AudioClock = av_q2d(m_pAudioStream->time_base) * m_pAudioFrame->pts;
+        }
+        else
+        {
+            m_AudioClock += static_cast<double>(bytesDecoded) / (2 * m_pAudioStream->codec->channels * m_pAudioStream->codec->sample_rate);
+        }
+
+        frame.setDataSize(m_pAudioFrame->linesize[0]);
+        frame.setFrameData(m_pAudioFrame->data[0]);
+        frame.setPts(m_AudioClock);
+
+        m_BytesPerFrame = max(m_BytesPerFrame, static_cast<uint32_t>(bytesDecoded));
+        frameDecoded = true;
+    }
+    catch (std::exception& e)
+    {
+        log::error(e.what());
+    }
+
+    av_free_packet(&packet);
+    return frameDecoded;
 }
 
 bool FFmpegDecoder::readPacket(AVPacket& packet)
 {
     bool frameRead = false;
 
-    while(!frameRead)
+    while (!frameRead)
     {
         av_init_packet(&packet);
         if (av_read_frame(m_pFormatContext, &packet) >= 0)
