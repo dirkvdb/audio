@@ -98,22 +98,37 @@ void PulseRenderer::setFormat(const Format& format)
     m_SampleFormat.rate = format.rate;
     m_SampleFormat.channels = format.numChannels;
 
-    switch (format.bits)
+    if (!format.floatingPoint)
     {
-    case 8:
-        m_SampleFormat.format = PA_SAMPLE_U8;
-        m_FrameSize = format.numChannels;
-        break;
-    case 16:
-        m_SampleFormat.format = PA_SAMPLE_S16NE;
-        m_FrameSize = format.numChannels * 2;
-        break;
-    case 32:
-        m_SampleFormat.format = PA_SAMPLE_FLOAT32NE;
-        m_FrameSize = format.numChannels * 4;
-        break;
-    default:
-        throw logic_error("PulseRenderer: unsupported format");
+        switch (format.bits)
+        {
+        case 8:
+            m_SampleFormat.format = PA_SAMPLE_U8;
+            m_FrameSize = format.numChannels;
+            break;
+        case 16:
+            m_SampleFormat.format = PA_SAMPLE_S16NE;
+            m_FrameSize = format.numChannels * 2;
+            break;
+        case 32:
+            m_SampleFormat.format = PA_SAMPLE_FLOAT32NE;
+            m_FrameSize = format.numChannels * 4;
+            break;
+        default:
+            throw logic_error("PulseRenderer: unsupported format");
+        }
+    }
+    else
+    {
+        switch (format.bits)
+        {
+        case 32:
+            formatType = PA_SAMPLE_FLOAT32NE;
+            m_FrameSize = format.numChannels * 4;
+            break;
+        default:
+            throw logic_error("PulseRenderer: unsupported format");   
+        }
     }
 
     if (!pa_sample_spec_valid(&m_SampleFormat))

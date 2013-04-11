@@ -123,7 +123,7 @@ void AlsaRenderer::setFormat(const Format& format)
         return;
     }
 
-    log::debug("Format has changed %d %d %d %d", format.bits, format.rate, format.numChannels, format.framesPerPacket);
+    log::debug("Format has changed %d %d %d %d %d", format.bits, format.rate, format.numChannels, format.framesPerPacket, format.floatingPoint);
     snd_pcm_format_t formatType;
     if (!format.floatingPoint)
     {
