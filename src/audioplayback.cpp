@@ -544,7 +544,7 @@ void Playback::updateWaveHeaderSize()
     m_WaveFile.close();
 }
 
-void Playback::dumpToWav(AudioFrame& frame)
+void Playback::dumpToWav(Frame& frame)
 {
     assert(m_WaveFile.is_open());
     m_WaveFile.write(reinterpret_cast<char*>(frame.getFrameData()), frame.getDataSize());

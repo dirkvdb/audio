@@ -222,6 +222,28 @@ void FFmpegDecoder::seek(::int64_t timestamp)
     }
 }
 
+template <typename T>
+void FFmpegDecoder::mergeAudioPlanes(Frame& frame)
+{
+    // audio data is in seperate planes, merge them
+    
+    uint32_t frameSize = m_pAudioFrame->nb_samples * av_get_bytes_per_sample(m_pAudioCodecContext->sample_fmt) * m_pAudioCodecContext->channels;
+    
+    frame.allocateData(frameSize);
+    frame.setDataSize(frameSize);
+    
+    T* pData = reinterpret_cast<T*>(frame.getFrameData());
+    T* pDataPlane1 = reinterpret_cast<T*>(m_pAudioFrame->data[0]);
+    T* pDataPlane2 = reinterpret_cast<T*>(m_pAudioFrame->data[1]);
+    
+    for (int i = 0; i < m_pAudioFrame->nb_samples; ++i)
+    {
+        *pData++ = *pDataPlane1++;
+        *pData++ = *pDataPlane2++;
+    }
+    
+    m_BytesPerFrame = max(m_BytesPerFrame, static_cast<uint32_t>(frameSize));
+}
 
 bool FFmpegDecoder::decodeAudioFrame(Frame& frame)
 {
@@ -268,28 +290,29 @@ bool FFmpegDecoder::decodeAudioFrame(Frame& frame)
                 m_AudioClock += static_cast<double>(bytesDecoded) / (2 * m_pAudioStream->codec->channels * m_pAudioStream->codec->sample_rate);
             }
             
-            if (m_pAudioCodecContext->sample_fmt == AV_SAMPLE_FMT_FLTP && m_pAudioCodecContext->channels == 2)
+            auto bytesPerSample = av_get_bytes_per_sample(m_pAudioCodecContext->sample_fmt);
+            
+            // planar multi channel audio requires merging the audio planes
+            if (m_pAudioCodecContext->channels >= 2 && m_pAudioCodecContext->sample_fmt == AV_SAMPLE_FMT_FLTP)
             {
-                // audio data is in seperate planes, merge them
-                frame.allocateData(m_pAudioFrame->linesize[0] * 2);
-                frame.setDataSize(m_pAudioFrame->linesize[0] * 2);
-                
-                float* pData = reinterpret_cast<float*>(frame.getFrameData());
-                for (int i = 0; i < m_pAudioFrame->linesize[0] / 4; ++i)
-                {
-                    *pData++ = *reinterpret_cast<float*>(m_pAudioFrame->data[0] + i*sizeof(float));
-                    *pData++ = *reinterpret_cast<float*>(m_pAudioFrame->data[1] + i*sizeof(float));
-                }
+                mergeAudioPlanes<float>(frame);
+            }
+            else if (m_pAudioCodecContext->channels >= 2 && m_pAudioCodecContext->sample_fmt == AV_SAMPLE_FMT_S16P)
+            {
+                mergeAudioPlanes<int16_t>(frame);
+            }
+            else if (m_pAudioCodecContext->channels >= 2 && m_pAudioCodecContext->sample_fmt == AV_SAMPLE_FMT_S32P)
+            {
+                mergeAudioPlanes<int32_t>(frame);
             }
             else
             {
-                frame.setDataSize(m_pAudioFrame->linesize[0]);
+                frame.setDataSize((m_pAudioFrame->nb_samples * bytesPerSample) * m_pAudioStream->codec->channels);
                 frame.setFrameData(m_pAudioFrame->data[0]);
+                m_BytesPerFrame = max(m_BytesPerFrame, static_cast<uint32_t>(bytesDecoded));
             }
 
             frame.setPts(m_AudioClock);
-
-            m_BytesPerFrame = max(m_BytesPerFrame, static_cast<uint32_t>(bytesDecoded));
             frameDecoded = true;
         }
     }
@@ -340,9 +363,11 @@ Format FFmpegDecoder::getAudioFormat()
         format.bits = 8;
         break;
     case AV_SAMPLE_FMT_S16:
+    case AV_SAMPLE_FMT_S16P:
         format.bits = 16;
         break;
     case AV_SAMPLE_FMT_S32:
+    case AV_SAMPLE_FMT_S32P:
         format.bits = 32;
         break;
     case AV_SAMPLE_FMT_FLT:
@@ -358,7 +383,7 @@ Format FFmpegDecoder::getAudioFormat()
     format.rate             = m_pAudioCodecContext->sample_rate;
     format.numChannels      = m_pAudioCodecContext->channels;
     format.framesPerPacket  = m_pAudioCodecContext->frame_size;
-
+    
     log::debug("Audio format: rate (%d) numChannels (%d)", format.rate, format.numChannels);
 
     return format;

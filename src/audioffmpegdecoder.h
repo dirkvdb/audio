@@ -56,6 +56,8 @@ public:
     int32_t getFrameSize();
 
 private:
+    template <typename T>
+    void mergeAudioPlanes(Frame& frame);
     bool readPacket(AVPacket& packet);
     void seek(int64_t timestamp);
     void initialize();

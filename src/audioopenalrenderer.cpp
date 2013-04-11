@@ -119,16 +119,16 @@ void OpenALRenderer::queueFrame(const Frame& frame)
     if (m_FloatingPoint)
     {
         std::vector<int16_t> frameData;
-        frameData.resize(frame.getDataSize() / 2);
+        frameData.resize(frame.getDataSize() / sizeof(float));
         
         const float* pData = reinterpret_cast<float*>(frame.getFrameData());
-        for (int i = 0; i < frame.getDataSize() / sizeof(float); ++i)
+        for (int i = 0; i < frameData.size(); ++i)
         {
-            float sample = numericops::clip(pData[i], -1.f, 1.f);
-            frameData[i] = sample * 32768.f;
+            float sample = numericops::clip(*pData++, -1.f, 1.f);
+            frameData[i] = static_cast<int16_t>(sample * 32768.f);
         }
         
-        alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frameData.data(), frameData.size(), m_Frequency);
+        alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frameData.data(), frameData.size() * 2, m_Frequency);
     }
     else
     {
