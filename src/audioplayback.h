@@ -76,8 +76,8 @@ private:
     bool rendererHasSpace(uint32_t dataSize);
     void setPlaybackState(PlaybackState state);
 
-    std::unique_ptr<audio::IDecoder>        m_pAudioDecoder;
-    std::unique_ptr<audio::IRenderer>       m_pAudioRenderer;
+    std::unique_ptr<IDecoder>               m_pAudioDecoder;
+    std::unique_ptr<IRenderer>              m_pAudioRenderer;
 
     std::thread                             m_PlaybackThread;
     std::condition_variable                 m_PlaybackCondition;
@@ -94,7 +94,7 @@ private:
     bool                                    m_SeekOccured;
     double                                  m_CurrentPts;
     double                                  m_Duration;
-    audio::Frame                            m_AudioFrame;
+    Frame                                   m_AudioFrame;
     std::set<PlaybackAction>                m_AvailableActions;
     std::string                             m_CurrentTrack;
 
@@ -104,7 +104,7 @@ private:
 
     void writeWaveHeader();
     void updateWaveHeaderSize();
-    void dumpToWav(AudioFrame& frame);
+    void dumpToWav(Frame& frame);
 #endif
 };
 

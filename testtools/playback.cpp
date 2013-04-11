@@ -49,30 +49,26 @@ int main(int argc, char** argv)
 {
     try
     {
-//        if (argc != 2)
-//        {
-//            log::error("Usage: %s filename", argv[0]);
-//            return -1;
-//        }
+        if (argc != 2)
+        {
+            log::error("Usage: %s filename", argv[0]);
+            return -1;
+        }
         
         Playlist playlist;
         std::unique_ptr<IPlayback> playback(PlaybackFactory::create("FFmpeg", "OpenAL", "Default", playlist));
-        playback->PlaybackStateChanged.connect([&] (PlaybackState state) {
-            if (state == PlaybackState::Stopped)
-            {
-                std::lock_guard<std::mutex> lock(g_Mutex);
-                g_Condition.notify_all();
-            }
-        }, playback.get());
-        
-        //playlist.addTrack(argv[1]);
-        playlist.addTrack("/Users/dirk/How Low.m4a");
+        playlist.addTrack(argv[1]);
+        //playlist.addTrack("/Users/dirk/How Low.m4a");
+        //playlist.addTrack("/Users/dirk/Jamie.mp3");
         
         usleep(10000);
         playback->play();
         
-        std::unique_lock<std::mutex> lock(g_Mutex);
-        g_Condition.wait(lock);
+        char key;
+        log::info("Press any key to stop");
+        std::cin >> key;
+        
+        playback->stop();
     }
     catch (std::exception& e)
     {
