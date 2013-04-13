@@ -17,6 +17,8 @@
 #ifndef AUDIO_PLAYLIST_INTERFACE_H
 #define AUDIO_PLAYLIST_INTERFACE_H
 
+#include <memory>
+
 namespace audio
 {
 
