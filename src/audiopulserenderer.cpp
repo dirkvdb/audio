@@ -123,7 +123,7 @@ void PulseRenderer::setFormat(const Format& format)
         switch (format.bits)
         {
         case 32:
-            formatType = PA_SAMPLE_FLOAT32NE;
+            m_SampleFormat.format = PA_SAMPLE_FLOAT32NE;
             m_FrameSize = format.numChannels * 4;
             break;
         default:
