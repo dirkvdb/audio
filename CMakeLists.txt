@@ -84,6 +84,7 @@ SET (AUDIO_SRC_LIST
     inc/audio/audioreaderfactory.h      src/audioreaderfactory.cpp
     inc/audio/audiorenderer.h
     inc/audio/audiorendererfactory.h    src/audiorendererfactory.cpp
+    inc/audio/audiotrackinterface.h
     src/audiobuffer.h                   src/audiobuffer.cpp
     inc/audio/audiom3uparser.h          src/audiom3uparser.cpp
 )

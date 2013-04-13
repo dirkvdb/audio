@@ -39,6 +39,7 @@ namespace audio
 class IDecoder;
 class IRenderer;
 class IPlaylist;
+class ITrack;
 
 class Playback : public IPlayback
 {
@@ -64,7 +65,7 @@ public:
     void setMute(bool enabled);
     bool getMute() const;
     
-    std::string getTrack() const;
+    std::shared_ptr<ITrack> getTrack() const;
     std::set<PlaybackAction> getAvailableActions() const;   
 
 private:
@@ -96,7 +97,7 @@ private:
     double                                  m_Duration;
     Frame                                   m_AudioFrame;
     std::set<PlaybackAction>                m_AvailableActions;
-    std::string                             m_CurrentTrack;
+    std::shared_ptr<ITrack>                 m_CurrentTrack;
 
 #ifdef DUMP_TO_WAVE
     std::ofstream                           m_WaveFile;

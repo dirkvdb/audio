@@ -14,21 +14,18 @@
 //    along with this program; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#ifndef AUDIO_PLAYLIST_INTERFACE_H
-#define AUDIO_PLAYLIST_INTERFACE_H
+#ifndef AUDIO_TRACK_INTERFACE_H
+#define AUDIO_TRACK_INTERFACE_H
 
 namespace audio
 {
 
-class ITrack;
-
-class IPlaylist
+class ITrack
 {
 public:
-    virtual ~IPlaylist() {}
-
-    virtual std::shared_ptr<ITrack> dequeueNextTrack() = 0;
-    virtual size_t getNumberOfTracks() const = 0;
+    ~ITrack() {}
+    
+    virtual std::string getUri() const = 0;
 };
 
 }

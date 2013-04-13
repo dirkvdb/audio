@@ -27,11 +27,11 @@
 #include "audio/audioformat.h"
 #include "audio/audioframe.h"
 #include "audio/audiorendererfactory.h"
+#include "audio/audiotrackinterface.h"
 #include "audio/audioplaylistinterface.h"
 #include "utils/timeoperations.h"
 #include "utils/numericoperations.h"
 #include "utils/log.h"
-//#include "settings.h"
 
 using namespace std;
 using namespace std::placeholders;
@@ -96,8 +96,8 @@ Playback::~Playback()
 
 bool Playback::startNewTrack()
 {
-    std::string track;
-    if (!m_Playlist.dequeueNextTrack(track))
+    auto track = m_Playlist.dequeueNextTrack();
+    if (!track)
     {
         stopPlayback(true);
         return false;
@@ -109,8 +109,8 @@ bool Playback::startNewTrack()
         std::lock_guard<std::recursive_mutex> lock(m_DecodeMutex);
         try
         {
-            log::info("Play track: %s", track);
-            m_pAudioDecoder.reset(audio::DecoderFactory::create(track));
+            log::info("Play track: %s", track->getUri());
+            m_pAudioDecoder.reset(audio::DecoderFactory::create(track->getUri()));
             m_CurrentTrack = track;
         }
         catch (logic_error& e)
@@ -417,7 +417,7 @@ bool Playback::getMute() const
     return m_pAudioRenderer ? m_pAudioRenderer->getMute() : false;
 }
 
-std::string Playback::getTrack() const
+std::shared_ptr<ITrack> Playback::getTrack() const
 {
     return m_CurrentTrack;
 }
@@ -483,7 +483,7 @@ void Playback::setPlaybackState(PlaybackState state)
             availableActions.insert(PlaybackAction::Play);
             break;
         case PlaybackState::Stopped:
-            if (!m_CurrentTrack.empty())
+            if (m_CurrentTrack)
             {
                 availableActions.insert(PlaybackAction::Play);
             }

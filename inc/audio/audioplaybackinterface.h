@@ -23,6 +23,8 @@
 namespace audio
 {
 
+class ITrack;
+
 enum class PlaybackState
 {
     Stopped,
@@ -62,14 +64,14 @@ public:
     virtual void setMute(bool mute) = 0;
     virtual bool getMute() const = 0;
 
-    virtual std::string getTrack() const = 0;
+    virtual std::shared_ptr<ITrack> getTrack() const = 0;
     virtual std::set<PlaybackAction> getAvailableActions() const = 0;
     
     utils::Signal<void(PlaybackState)>              PlaybackStateChanged;
     utils::Signal<void(std::set<PlaybackAction>)>   AvailableActionsChanged;
     utils::Signal<void(double)>                     ProgressChanged;
     utils::Signal<void(int32_t)>                    VolumeChanged;
-    utils::Signal<void(std::string)>                NewTrackStarted;
+    utils::Signal<void(std::shared_ptr<ITrack>)>    NewTrackStarted;
 };
 
 }
