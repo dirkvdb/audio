@@ -11,6 +11,7 @@ PKG_CHECK_MODULES(MAD mad)
 PKG_CHECK_MODULES(AVCODEC libavcodec)
 PKG_CHECK_MODULES(AVFORMAT libavformat)
 PKG_CHECK_MODULES(AVUTIL libavutil)
+PKG_CHECK_MODULES(TAGLIB taglib)
 
 FIND_PACKAGE(ALSA)
 IF (ALSA_FOUND)
@@ -41,6 +42,10 @@ IF (MAD_FOUND)
     OPTION(HAVE_MAD "Mad mp3 audio decoder support" ON)
 ENDIF (MAD_FOUND)
 
+IF (TAGLIB_FOUND)
+    OPTION(HAVE_TAGLIB "Taglib audio metadata support" ON)
+ENDIF (TAGLIB_FOUND)
+
 SET (AUDIO_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/inc/"
     "${CMAKE_CURRENT_SOURCE_DIR}/../utils/inc/"
@@ -48,6 +53,7 @@ SET (AUDIO_INCLUDE_DIRS
     ${PULSEAUDIO_INCLUDE_DIRS}
     ${MAD_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIRS}
+    ${TAGLIB_INCLUDE_DIRS}
 )
 
 SET (AUDIO_LIBRARY_DIRS
@@ -61,6 +67,7 @@ SET (AUDIO_LIBRARIES audio
     ${FLAC_LIBRARIES}
     ${MAD_LIBRARIES}
     ${UTILS_LIBRARIES}
+    ${TAGLIB_LIBRARIES}
 )
 
 IF (HAVE_OPENAL)
@@ -112,6 +119,11 @@ ENDIF (HAVE_FLAC)
 IF (HAVE_MAD)
     LIST(APPEND AUDIO_SRC_LIST src/audiomaddecoder.h src/audiomaddecoder.cpp)
 ENDIF (HAVE_MAD)
+
+IF (HAVE_TAGLIB)
+    LIST(APPEND AUDIO_SRC_LIST inc/audio/audiometadata.h src/audiometadata.cpp
+                               src/audiotaglibiostream.h src/audiotaglibiostream.cpp)
+ENDIF (HAVE_TAGLIB)
 
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR} ${AUDIO_INCLUDE_DIRS})
 LINK_DIRECTORIES(${AUDIO_LIBRARY_DIRS})
