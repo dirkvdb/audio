@@ -165,8 +165,8 @@ TEST_F(BufferedReaderTest, endOfFile)
     std::array<uint8_t, 2> readData;
     
     reader.seekAbsolute(99);
-    EXPECT_EQ(1, reader.read(readData.data(), readData.size()));
-    EXPECT_EQ(99,  readData[0]);
+    EXPECT_EQ(1U, reader.read(readData.data(), readData.size()));
+    EXPECT_EQ(99U,  readData[0]);
     
     EXPECT_TRUE(reader.eof());
 }
