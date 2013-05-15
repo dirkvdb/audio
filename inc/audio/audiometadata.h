@@ -36,6 +36,21 @@ class TaglibIOStream;
 class Metadata
 {
 public:
+    enum class ImageFormat
+    {
+        Png,
+        Jpeg,
+        Bitmap,
+        Gif,
+        Unknown
+    };
+    
+    struct AlbumArt
+    {
+        ImageFormat             format;
+        std::vector<uint8_t>    data;
+    };
+
     Metadata(const std::string& filepath);
 
     std::string getArtist();
@@ -51,12 +66,12 @@ public:
     uint32_t getSampleRate();
     uint32_t getChannels();
     uint32_t getDuration();
-    bool getAlbumArt(std::vector<uint8_t>& data, const std::vector<std::string>& albumArtFileList);
+    AlbumArt getAlbumArt();
 
 private:
     void throwIfNotValid() const;
     static uint32_t parseDisc(const std::string& disc);
-
+    
     std::shared_ptr<TaglibIOStream> m_IoStream;
     std::shared_ptr<TagLib::File>   m_TagFile;
 };

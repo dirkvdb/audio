@@ -29,6 +29,7 @@ TaglibIOStream::TaglibIOStream(const std::string& url)
 : m_Reader(ReaderFactory::create(url))
 , m_BufReader(new BufferedReader(*m_Reader, 512))
 {
+    m_Reader->open(url);
 }
 
 TaglibIOStream::~TaglibIOStream()

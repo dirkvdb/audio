@@ -213,8 +213,32 @@ uint32_t Metadata::getDuration()
     return m_TagFile->audioProperties() ? m_TagFile->audioProperties()->length() : 0;
 }
 
-bool Metadata::getAlbumArt(std::vector<uint8_t>& data, const std::vector<std::string>& albumArtFileList)
+static Metadata::ImageFormat imageFormatFromMimetype(const std::string& mimetype)
 {
+    if (mimetype == "image/png")    return Metadata::ImageFormat::Png;
+    if (mimetype == "image/jpeg")   return Metadata::ImageFormat::Jpeg;
+    if (mimetype == "image/bmp")    return Metadata::ImageFormat::Bitmap;
+    if (mimetype == "image/gif")    return Metadata::ImageFormat::Gif;
+    
+    return Metadata::ImageFormat::Unknown;
+}
+
+static Metadata::ImageFormat imageFormatFromMp4Format(MP4::CoverArt::Format format)
+{
+    switch (format)
+    {
+    case MP4::CoverArt::PNG:    return Metadata::ImageFormat::Png;
+    case MP4::CoverArt::JPEG:   return Metadata::ImageFormat::Jpeg;
+    case MP4::CoverArt::BMP:    return Metadata::ImageFormat::Bitmap;
+    case MP4::CoverArt::GIF:    return Metadata::ImageFormat::Gif;
+    default:                    return Metadata::ImageFormat::Unknown;
+    }
+}
+
+Metadata::AlbumArt Metadata::getAlbumArt()
+{
+    AlbumArt art;
+
     if (MPEG::File* pMpegFile = dynamic_cast<MPEG::File*>(m_TagFile.get()))
     {
         if (pMpegFile->ID3v2Tag())
@@ -229,19 +253,20 @@ bool Metadata::getAlbumArt(std::vector<uint8_t>& data, const std::vector<std::st
                 if (pCurPicture->type() == TagLib::ID3v2::AttachedPictureFrame::FrontCover)
                 {
                     pAlbumArt = pCurPicture;
+                    art.format = imageFormatFromMimetype(pCurPicture->mimeType().toCString());
                     break;
                 }
                 else if (pAlbumArt == nullptr)
                 {
                     pAlbumArt = pCurPicture;
+                    art.format = imageFormatFromMimetype(pCurPicture->mimeType().toCString());
                 }
             }
 
             if (pAlbumArt != nullptr)
             {
-                data.resize(pAlbumArt->picture().size());
-                memcpy(data.data(), pAlbumArt->picture().data(), data.size());
-                return true;
+                art.data.resize(pAlbumArt->picture().size());
+                memcpy(art.data.data(), pAlbumArt->picture().data(), art.data.size());
             }
         }
     }
@@ -252,8 +277,9 @@ bool Metadata::getAlbumArt(std::vector<uint8_t>& data, const std::vector<std::st
         {
             TagLib::FLAC::Picture* pic = picList[0];
             auto picData = pic->data();
-            data.resize(picData.size());
-            memcpy(data.data(), picData.data(), data.size());
+            art.data.resize(picData.size());
+            memcpy(art.data.data(), picData.data(), art.data.size());
+            art.format = imageFormatFromMimetype(pic->mimeType().toCString());
         }
     }
     else if (MP4::File* pMp4File = dynamic_cast<MP4::File*>(m_TagFile.get()))
@@ -265,12 +291,13 @@ bool Metadata::getAlbumArt(std::vector<uint8_t>& data, const std::vector<std::st
         {
             auto data = coverList.front().data();
         
-            data.resize(data.size());
-            memcpy(data.data(), data.data(), data.size());
+            art.data.resize(data.size());
+            memcpy(art.data.data(), data.data(), art.data.size());
+            art.format = imageFormatFromMp4Format(coverList.front().format());
         }
     }
 
-    return false;
+    return art;
 }
 
 uint32_t Metadata::parseDisc(const std::string& disc)
