@@ -316,6 +316,7 @@ void Metadata::throwIfNotValid() const
 
 static std::shared_ptr<TagLib::File> createFile(TagLib::IOStream& ioStream, bool readAudioProperties, AudioProperties::ReadStyle audioPropertiesStyle)
 {
+    std::string filename = ioStream.name();
     std::string ext = stringops::uppercase(fileops::getFileExtension(ioStream.name()));
 
     if (ext == "MP3")

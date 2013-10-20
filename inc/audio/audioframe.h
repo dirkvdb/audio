@@ -18,6 +18,7 @@
 #define AUDIO_FRAME_H
 
 #include "utils/types.h"
+#include <cstddef>
 
 namespace audio
 {
@@ -29,22 +30,22 @@ public:
     virtual ~Frame();
 
     uint8_t* getFrameData() const;
-    uint32_t getDataSize() const;
+    size_t getDataSize() const;
     double getPts() const;
 
     void setFrameData(uint8_t* data);
-    void setDataSize(uint32_t size);
+    void setDataSize(size_t size);
     void setPts(double pts);
 
-    void allocateData(uint32_t size);
+    void allocateData(size_t size);
     void freeData();
 
     void clear();
-    void offsetDataPtr(uint32_t offset);
+    void offsetDataPtr(size_t offset);
 
 private:
     uint8_t*    m_pFrameData;
-    uint32_t    m_DataSize;
+    size_t      m_DataSize;
     double      m_Pts;
 };
 

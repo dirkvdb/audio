@@ -74,7 +74,7 @@ private:
     void sendProgressIfNeeded();
     void playback();
     void playbackLoop();
-    bool rendererHasSpace(uint32_t dataSize);
+    bool rendererHasSpace(size_t dataSize);
     void setPlaybackState(PlaybackState state);
 
     std::unique_ptr<IDecoder>               m_pAudioDecoder;

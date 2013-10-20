@@ -40,7 +40,7 @@ uint8_t* Frame::getFrameData() const
     return m_pFrameData;
 }
 
-uint32_t Frame::getDataSize() const
+size_t Frame::getDataSize() const
 {
     return m_DataSize;
 }
@@ -55,7 +55,7 @@ void Frame::setFrameData(uint8_t* data)
     m_pFrameData = data;
 }
 
-void Frame::setDataSize(uint32_t size)
+void Frame::setDataSize(size_t size)
 {
     m_DataSize = size;
 }
@@ -72,7 +72,7 @@ void Frame::clear()
     m_Pts = 0.0;
 }
 
-void Frame::offsetDataPtr(uint32_t offset)
+void Frame::offsetDataPtr(size_t offset)
 {
     if (offset >= m_DataSize)
     {
@@ -86,7 +86,7 @@ void Frame::offsetDataPtr(uint32_t offset)
     }
 }
 
-void Frame::allocateData(uint32_t size)
+void Frame::allocateData(size_t size)
 {
     m_pFrameData = new uint8_t[size];
     m_DataSize = size;

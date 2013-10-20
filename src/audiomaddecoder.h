@@ -52,7 +52,7 @@ public:
     double  getProgress();
     double  getAudioClock();
     double  getDuration();
-    int32_t getFrameSize();
+    size_t getFrameSize();
 
 private:
     bool readDataIfNecessary();

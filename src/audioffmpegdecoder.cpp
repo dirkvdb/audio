@@ -183,7 +183,7 @@ double FFmpegDecoder::getDuration()
     return static_cast<double>(m_pFormatContext->duration / AV_TIME_BASE);
 }
 
-int32_t FFmpegDecoder::getFrameSize()
+size_t FFmpegDecoder::getFrameSize()
 {
     return m_BytesPerFrame;
 }
@@ -242,7 +242,7 @@ void FFmpegDecoder::mergeAudioPlanes(Frame& frame)
         *pData++ = *pDataPlane2++;
     }
     
-    m_BytesPerFrame = max(m_BytesPerFrame, static_cast<uint32_t>(frameSize));
+    m_BytesPerFrame = max(m_BytesPerFrame, static_cast<size_t>(frameSize));
 }
 
 bool FFmpegDecoder::decodeAudioFrame(Frame& frame)
@@ -309,7 +309,7 @@ bool FFmpegDecoder::decodeAudioFrame(Frame& frame)
             {
                 frame.setDataSize((m_pAudioFrame->nb_samples * bytesPerSample) * m_pAudioStream->codec->channels);
                 frame.setFrameData(m_pAudioFrame->data[0]);
-                m_BytesPerFrame = max(m_BytesPerFrame, static_cast<uint32_t>(bytesDecoded));
+                m_BytesPerFrame = max(m_BytesPerFrame, static_cast<size_t>(bytesDecoded));
             }
 
             frame.setPts(m_AudioClock);

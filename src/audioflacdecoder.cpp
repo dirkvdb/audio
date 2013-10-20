@@ -40,7 +40,7 @@ FlacDecoder::FlacDecoder(const std::string& uri)
 
     set_md5_checking(true);
 
-    FLAC__StreamDecoderInitStatus initStatus = init();
+    auto initStatus = init();
     if (initStatus != FLAC__STREAM_DECODER_INIT_STATUS_OK)
     {
         throw logic_error(FLAC__StreamDecoderInitStatusString[initStatus]);
@@ -79,7 +79,7 @@ double FlacDecoder::getDuration()
     return static_cast<double>(m_NumSamples / m_Format.rate);
 }
 
-int32_t FlacDecoder::getFrameSize()
+size_t FlacDecoder::getFrameSize()
 {
     return m_BytesPerFrame;
 }
@@ -226,7 +226,7 @@ void FlacDecoder::metadata_callback(const FLAC__StreamMetadata* pMetadata)
 
 void FlacDecoder::error_callback(FLAC__StreamDecoderErrorStatus status)
 {
-    log::error("FlacDecoder: %s",  FLAC__StreamDecoderErrorStatusString[status]);
+    log::error("FlacDecoder: %s", FLAC__StreamDecoderErrorStatusString[status]);
 }
 
 }

@@ -6,7 +6,8 @@ ADD_DEFINITIONS("-D__STDC_CONSTANT_MACROS")
 
 FIND_PACKAGE(PkgConfig)
 PKG_CHECK_MODULES(PULSEAUDIO libpulse)
-PKG_CHECK_MODULES(FLAC flac++)
+PKG_CHECK_MODULES(FLAC flac)
+PKG_CHECK_MODULES(FLACCPP flac++)
 PKG_CHECK_MODULES(MAD mad)
 PKG_CHECK_MODULES(AVCODEC libavcodec)
 PKG_CHECK_MODULES(AVFORMAT libavformat)
@@ -34,9 +35,9 @@ IF (AVCODEC_FOUND AND AVFORMAT_FOUND AND AVUTIL_FOUND)
     SET(FFMPEG_LIBRARIES ${AVCODEC_LIBRARIES} ${AVFORMAT_LIBRARIES} ${AVUTIL_LIBRARIES})
 ENDIF (AVCODEC_FOUND AND AVFORMAT_FOUND AND AVUTIL_FOUND)
 
-IF (FLAC_FOUND)
+IF (FLACCPP_FOUND)
     OPTION(HAVE_FLAC "Flac audio decoder support" ON)
-ENDIF (FLAC_FOUND)
+ENDIF (FLACCPP_FOUND)
 
 IF (MAD_FOUND)
     OPTION(HAVE_MAD "Mad mp3 audio decoder support" ON)
@@ -65,6 +66,7 @@ SET (AUDIO_LIBRARIES audio
     ${PULSEAUDIO_LIBRARIES}
     ${FFMPEG_LIBRARIES}
     ${FLAC_LIBRARIES}
+    ${FLACCPP_LIBRARIES}
     ${MAD_LIBRARIES}
     ${UTILS_LIBRARIES}
     ${TAGLIB_LIBRARIES}
@@ -82,6 +84,7 @@ SET (AUDIO_SRC_LIST
     inc/audio/audiofilereader.h         src/audiofilereader.cpp
     inc/audio/audiobufferedreader.h     src/audiobufferedreader.cpp
     inc/audio/audioformat.h
+    inc/audio/audioflacheaders.h
     inc/audio/audioframe.h              src/audioframe.cpp
     inc/audio/audiompegutils.h          src/audiompegutils.cpp
     inc/audio/audioplaybackinterface.h

@@ -128,12 +128,12 @@ void OpenALRenderer::queueFrame(const Frame& frame)
             frameData[i] = static_cast<int16_t>(sample * 32768.f);
         }
         
-        alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frameData.data(), frameData.size() * 2, m_Frequency);
+        alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frameData.data(), static_cast<ALsizei>(frameData.size() * 2), m_Frequency);
     }
     else
     {
         assert(frame.getFrameData());
-        alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frame.getFrameData(), frame.getDataSize(), m_Frequency);
+        alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frame.getFrameData(), static_cast<ALsizei>(frame.getDataSize()), m_Frequency);
     }
     
     alSourceQueueBuffers(m_AudioSource, 1, &m_AudioBuffers[m_CurrentBuffer]);

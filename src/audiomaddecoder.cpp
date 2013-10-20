@@ -104,7 +104,7 @@ double MadDecoder::getDuration()
     return m_Duration;
 }
 
-int32_t MadDecoder::getFrameSize()
+size_t MadDecoder::getFrameSize()
 {
     return m_MpegHeader.samplesPerFrame * m_MpegHeader.numChannels * 2 /* 16 bits / 2 */; ;
 }
@@ -185,7 +185,7 @@ bool MadDecoder::readDataIfNecessary()
             }
             memset(&m_InputBuffer[choppedFrameSize + static_cast<size_t>(readBytes)], 0, MAD_BUFFER_GUARD);
             mad_stream_buffer(&m_MadStream, &m_InputBuffer[0], static_cast<size_t>(readBytes) + choppedFrameSize + MAD_BUFFER_GUARD);
-            m_InputBufSize = static_cast<size_t>(readBytes) + choppedFrameSize;
+            m_InputBufSize = static_cast<uint32_t>(static_cast<size_t>(readBytes) + choppedFrameSize);
         }
         //else if (m_FileStream.fail())
         //{
@@ -241,10 +241,10 @@ inline int32_t dither(mad_fixed_t sample, mad_fixed_t ditherError[3], mad_fixed_
     mad_fixed_t output = sample + (1L << (MAD_F_FRACBITS + 1 - 16 - 1));
 
     uint32_t scalebits = MAD_F_FRACBITS + 1 - 16;
-    mad_fixed_t mask = (1L << scalebits) - 1;
+    mad_fixed_t mask = static_cast<mad_fixed_t>((1L << scalebits) - 1);
 
     /* dither */
-    mad_fixed_t rand = prng(random);
+    mad_fixed_t rand = static_cast<mad_fixed_t>(prng(random));
     output += (rand & mask) - (random & mask);
 
     //random = rand;
@@ -347,7 +347,7 @@ bool MadDecoder::decodeAudioFrame(Frame& frame, bool processSamples)
             return decodeAudioFrame(frame, processSamples);
         }
 
-        uint32_t delay = m_LameHeader.encoderDelay * m_MpegHeader.numChannels * 2 /*16 / 8*/;
+        size_t delay = m_LameHeader.encoderDelay * m_MpegHeader.numChannels * 2 /*16 / 8*/;
         frame.setFrameData(&m_OutputBuffer[delay]);
         frame.setDataSize(m_OutputBuffer.size() - delay);
         m_FirstFrame = false;

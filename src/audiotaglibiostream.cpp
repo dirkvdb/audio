@@ -46,8 +46,8 @@ FileName TaglibIOStream::name() const
 ByteVector TaglibIOStream::readBlock(ulong readLength)
 {
     ByteVector data;
-    data.resize(readLength);
-    data.resize(m_BufReader->read(reinterpret_cast<uint8_t*>(data.data()), readLength));
+    data.resize(static_cast<uint>(readLength));
+    data.resize(static_cast<uint>(m_BufReader->read(reinterpret_cast<uint8_t*>(data.data()), static_cast<uint>(readLength))));
     
     return data;
 }

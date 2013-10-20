@@ -227,12 +227,12 @@ void Playback::playback()
     }
 }
 
-bool Playback::rendererHasSpace(uint32_t dataSize)
+bool Playback::rendererHasSpace(size_t dataSize)
 {
     if (m_pAudioRenderer)
     {
         std::lock_guard<std::mutex> lock(m_PlaybackMutex);
-        return m_pAudioRenderer->hasBufferSpace(dataSize);
+        return m_pAudioRenderer->hasBufferSpace(static_cast<uint32_t>(dataSize));
     }
 
     return false;

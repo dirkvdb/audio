@@ -28,7 +28,7 @@ uint8_t* Buffer::getData(uint32_t& size)
     size = std::min(bytesUsed(), size);
     if (m_pReadPtr + size >= m_pEnd)
     {
-        size = m_pEnd - m_pReadPtr;
+        size = static_cast<uint32_t>(m_pEnd - m_pReadPtr);
         m_pReadPtr = m_pAudioBuffer;
     }
     else

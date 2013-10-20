@@ -53,7 +53,7 @@ public:
 
     double  getProgress();
     double  getDuration();
-    int32_t getFrameSize();
+    size_t getFrameSize();
 
 private:
     template <typename T>
@@ -70,7 +70,7 @@ private:
     AVCodec*                m_pAudioCodec;
     AVStream*               m_pAudioStream;
     AVFrame*                m_pAudioFrame;
-    uint32_t                m_BytesPerFrame;
+    size_t                  m_BytesPerFrame;
 };
 
 }

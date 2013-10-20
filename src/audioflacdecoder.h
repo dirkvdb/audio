@@ -22,10 +22,11 @@
 #include <memory>
 
 #include <cassert>
-#include <FLAC++/decoder.h>
 
 #include "audio/audiodecoder.h"
 #include "audio/audioformat.h"
+#include "audio/audioflacheaders.h"
+
 #include "utils/types.h"
 #include "utils/readerinterface.h"
 
@@ -50,7 +51,7 @@ public:
 
     double  getProgress();
     double  getDuration();
-    int32_t getFrameSize();
+    size_t getFrameSize();
 
 protected:
     FLAC__StreamDecoderReadStatus read_callback(FLAC__byte buffer[], size_t* pBytes);
@@ -64,7 +65,7 @@ protected:
 
 private:
     std::vector<uint8_t>            m_AudioBuffer;
-    uint32_t                        m_BytesPerFrame;
+    size_t                          m_BytesPerFrame;
     uint64_t                        m_NumSamples;
     Format                          m_Format;
     std::unique_ptr<utils::IReader> m_pReader;
