@@ -21,6 +21,7 @@
 #include <taglib/tiostream.h>
 
 #include <memory>
+#include <string>
 
 #include "utils/readerinterface.h"
 #include "audio/audiobufferedreader.h"
@@ -49,7 +50,7 @@ public:
     
 private:
     std::unique_ptr<utils::IReader> m_Reader;
-    std::unique_ptr<BufferedReader> m_BufReader;
+    std::string                     m_Uri;
 };
 
 }

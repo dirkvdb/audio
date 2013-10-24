@@ -49,23 +49,21 @@ MadDecoder::MadDecoder(const std::string& uri)
 , m_InputBuffer(INPUT_BUFFER_SIZE + MAD_BUFFER_GUARD)
 , m_RandomValueL(0)
 , m_RandomValueR(0)
-, m_pReader(ReaderFactory::create(uri))
+, m_Reader(ReaderFactory::createBuffered(uri, 1024*128))
 {
-    // use a bufferedreader to read the header info, it involves lots of small reads
-    BufferedReader bufferedReader(*m_pReader, 256);
-    bufferedReader.open(uri);
+    m_Reader->open(uri);
     
-    m_FileSize = static_cast<uint32_t>(bufferedReader.getContentLength());
+    m_FileSize = static_cast<uint32_t>(m_Reader->getContentLength());
 
-    if (!readHeaders(bufferedReader))
+    if (!readHeaders(*m_Reader))
     {
-        throw logic_error("File is not an mp3 file: " + bufferedReader.uri());
+        throw logic_error("File is not an mp3 file: " + m_Reader->uri());
     }
 
     log::debug("Mad Audio format: bits (16) rate (%d) numChannels (%d) bitrate (%d)", m_MpegHeader.sampleRate, m_MpegHeader.numChannels, m_MpegHeader.bitRate);
     log::debug("Encoderdelay: %d ZeroPadding: %d", m_LameHeader.encoderDelay, m_LameHeader.zeroPadding);
 
-    bufferedReader.seekAbsolute(m_Id3Size);
+    m_Reader->seekAbsolute(m_Id3Size);
 
     mad_stream_init(&m_MadStream);
     mad_frame_init(&m_MadFrame);
@@ -132,7 +130,7 @@ void MadDecoder::seekAbsolute(double time)
         byteOffset = m_Id3Size + static_cast<uint32_t>((m_FileSize * percentage));
     }
     
-    m_pReader->seekAbsolute(byteOffset);
+    m_Reader->seekAbsolute(byteOffset);
 
     mad_stream_finish(&m_MadStream);
     mad_stream_init(&m_MadStream);
@@ -176,8 +174,8 @@ bool MadDecoder::readDataIfNecessary()
             bytesToRead -= choppedFrameSize;
         }
 
-        uint64_t readBytes = m_pReader->read(&m_InputBuffer[choppedFrameSize], bytesToRead);
-        if (m_pReader->eof())
+        uint64_t readBytes = m_Reader->read(&m_InputBuffer[choppedFrameSize], bytesToRead);
+        if (m_Reader->eof())
         {
             if (readBytes == 0)
             {
@@ -201,7 +199,7 @@ bool MadDecoder::readDataIfNecessary()
         m_MadStream.error = MAD_ERROR_NONE;
     }
 
-    return !m_pReader->eof();
+    return !m_Reader->eof();
 }
 
 bool MadDecoder::synchronize()
@@ -289,7 +287,7 @@ bool MadDecoder::decodeAudioFrame(Frame& frame, bool processSamples)
         {        
             if (m_MadStream.error == MAD_ERROR_BUFLEN)
             {
-                if (m_pReader->eof())
+                if (m_Reader->eof())
                 {
                     return false;
                 }
@@ -352,7 +350,7 @@ bool MadDecoder::decodeAudioFrame(Frame& frame, bool processSamples)
         frame.setDataSize(m_OutputBuffer.size() - delay);
         m_FirstFrame = false;
     }
-    else if (m_pReader->eof() && ((&m_InputBuffer[m_InputBufSize] - m_MadStream.next_frame) == 1173) && (m_LameHeader.zeroPadding >= m_MadSynth.pcm.length))
+    else if (m_Reader->eof() && ((&m_InputBuffer[m_InputBufSize] - m_MadStream.next_frame) == 1173) && (m_LameHeader.zeroPadding >= m_MadSynth.pcm.length))
     {
         //1 to last frame
         uint32_t paddingBytes = (m_LameHeader.zeroPadding - m_MadSynth.pcm.length) * m_MpegHeader.numChannels * 2 /*16 / 8*/;
@@ -360,7 +358,7 @@ bool MadDecoder::decodeAudioFrame(Frame& frame, bool processSamples)
         frame.setFrameData(&m_OutputBuffer[0]);
         frame.setDataSize(m_OutputBuffer.size() - paddingBytes);
     }
-    else if (m_pReader->eof() && ((&m_InputBuffer[m_InputBufSize] - m_MadStream.next_frame) <= 128))
+    else if (m_Reader->eof() && ((&m_InputBuffer[m_InputBufSize] - m_MadStream.next_frame) <= 128))
     {
         //final frame of file has just been proccessed
         uint32_t paddingBytes = m_LameHeader.zeroPadding * m_MpegHeader.numChannels * 2 /*16 / 8*/;

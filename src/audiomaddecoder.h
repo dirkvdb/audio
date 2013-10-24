@@ -85,7 +85,7 @@ private:
     mad_fixed_t                     m_RandomValueL;
     mad_fixed_t                     m_RandomValueR;
 
-    std::unique_ptr<utils::IReader> m_pReader;
+    std::unique_ptr<utils::IReader> m_Reader;
 };
 
 }

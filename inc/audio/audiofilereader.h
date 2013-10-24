@@ -38,6 +38,7 @@ public:
     void seekAbsolute(uint64_t position);
     void seekRelative(uint64_t offset);
     uint64_t read(uint8_t* pData, uint64_t size);
+    void clearErrors();
 
 private:
     std::string         m_FileName;

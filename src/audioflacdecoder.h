@@ -68,7 +68,7 @@ private:
     size_t                          m_BytesPerFrame;
     uint64_t                        m_NumSamples;
     Format                          m_Format;
-    std::unique_ptr<utils::IReader> m_pReader;
+    std::unique_ptr<utils::IReader> m_Reader;
 };
 
 }

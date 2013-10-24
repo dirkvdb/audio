@@ -5,6 +5,7 @@
 #include "utils/fileoperations.h"
 #include "audio/audiompegutils.h"
 #include "audio/audiofilereader.h"
+#include "audio/audiometadata.h"
 #include "audio/audiobufferedreader.h"
 
 using namespace std;
@@ -20,9 +21,17 @@ int main(int argc, char** argv)
             log::error("Usage: %s filename", argv[0]);
             return -1;
         }
-
-        FileReader fileReader;
-        BufferedReader reader(fileReader, 512);
+        
+        Metadata meta(argv[1]);
+        log::info("Artist: %s", meta.getArtist());
+        log::info("Title: %s", meta.getTitle());
+        
+        auto data = meta.getAlbumArt();
+        ofstream ostr("cover.jpg", std::ios::binary);
+        ostr.write(reinterpret_cast<const char*>(data.data.data()), data.data.size());
+        ostr.close();
+        
+        BufferedReader reader(std::unique_ptr<FileReader>(new FileReader()), 512);
         reader.open(argv[1]);
         
         uint64_t filesize = reader.getContentLength();
@@ -90,7 +99,7 @@ int main(int argc, char** argv)
             log::info("Bitrate: %d", mpegHeader.bitRate);
             log::info("Samplerate: %d", mpegHeader.sampleRate);
             log::info("Samples per frame: %d", mpegHeader.samplesPerFrame);
-            log::info("Duration: %f", (filesize - id3Size) / (mpegHeader.bitRate * 125));
+            log::info("Duration: %f", static_cast<float>((filesize - id3Size) / (mpegHeader.bitRate * 125)));
 
             log::info("No xing header found");
             return 0;

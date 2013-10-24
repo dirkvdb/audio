@@ -23,8 +23,8 @@
 namespace audio
 {
 
-BufferedReader::BufferedReader(utils::IReader& reader, size_t bufferSize)
-: m_Reader(reader)
+BufferedReader::BufferedReader(std::unique_ptr<utils::IReader> reader, size_t bufferSize)
+: m_Reader(std::move(reader))
 , m_Buffer(bufferSize, '\0')
 , m_BufferStartPosition(0)
 , m_BufferOffset(0)
@@ -36,8 +36,8 @@ BufferedReader::BufferedReader(utils::IReader& reader, size_t bufferSize)
 
 void BufferedReader::open(const std::string& filename)
 {
-    m_Reader.open(filename);
-    m_ContentLength = m_Reader.getContentLength();
+    m_Reader->open(filename);
+    m_ContentLength = m_Reader->getContentLength();
     m_BufferStartPosition = 0;
     m_CurrentPosition = 0;
     m_BufferOffset = 0;
@@ -56,13 +56,13 @@ uint64_t BufferedReader::currentPosition()
 
 void BufferedReader::seekAbsolute(uint64_t position)
 {
-    m_Reader.seekAbsolute(position);
+    m_Reader->seekAbsolute(position);
     updateOffsetsAfterSeek(position);
 }
 
 void BufferedReader::seekRelative(uint64_t offset)
 {
-    m_Reader.seekAbsolute(m_CurrentPosition + offset);
+    m_Reader->seekAbsolute(m_CurrentPosition + offset);
     updateOffsetsAfterSeek(m_CurrentPosition + offset);
 }
 
@@ -73,7 +73,7 @@ bool BufferedReader::eof()
 
 std::string BufferedReader::uri()
 {
-    return m_Reader.uri();
+    return m_Reader->uri();
 }
 
 uint64_t BufferedReader::read(uint8_t* pData, uint64_t size)
@@ -82,20 +82,28 @@ uint64_t BufferedReader::read(uint8_t* pData, uint64_t size)
     {
         if (size < m_Buffer.size())
         {
-            auto read = m_Reader.read(m_Buffer.data(), m_Buffer.size());
-            auto advance = std::min(read, size);
+            auto read = m_Reader->read(m_Buffer.data(), m_Buffer.size());
             
-            memcpy(pData, m_Buffer.data(), size);
-            m_BufferStartPosition = m_CurrentPosition;
-            m_BufferFilled = true;
-            m_CurrentPosition += advance;
-            m_BufferOffset = advance;
-            return advance;
+            if (read > 0)
+            {
+                auto advance = std::min(read, size);
+                
+                memcpy(pData, m_Buffer.data(), size);
+                m_BufferStartPosition = m_CurrentPosition;
+                m_BufferFilled = true;
+                m_CurrentPosition += advance;
+                m_BufferOffset = advance;
+                return advance;
+            }
+            else
+            {
+                return read;
+            }
         }
         else
         {
             // requested data larger then buffer, read directly
-            m_CurrentPosition = m_Reader.read(pData, size);
+            m_CurrentPosition = m_Reader->read(pData, size);
             return size;
         }
     }
@@ -122,8 +130,8 @@ uint64_t BufferedReader::read(uint8_t* pData, uint64_t size)
             {
                 // one bufferfill is sufficient to provide the data
                 
-                // fill the buffer with frash data
-                auto read = m_Reader.read(m_Buffer.data(), m_Buffer.size());
+                // fill the buffer with fresh data
+                auto read = m_Reader->read(m_Buffer.data(), m_Buffer.size());
                 auto bytesToRead = std::min(read, size - bytesInBuffer);
                 
                 // copy the reaming data from the buffer
@@ -145,19 +153,26 @@ uint64_t BufferedReader::read(uint8_t* pData, uint64_t size)
             else
             {
                 // rest of the data is larger then 1 buffer so read it directly
-                auto read = m_Reader.read(pData + bytesInBuffer, size - bytesInBuffer);
+                // first make sure the read position is correct
+                m_Reader->seekAbsolute(m_CurrentPosition);
+                auto read = m_Reader->read(pData + bytesInBuffer, size - bytesInBuffer);
                 m_CurrentPosition += read;
                 m_BufferFilled = false;
-
+                
                 return read + bytesInBuffer;
             }
         }
     }
 }
 
+void BufferedReader::clearErrors()
+{
+    m_Reader->clearErrors();
+}
+
 void BufferedReader::updateOffsetsAfterSeek(uint64_t newPosition)
 {
-    if (m_BufferFilled && (newPosition < (m_BufferStartPosition + m_Buffer.size())))
+    if (m_BufferFilled && (newPosition >= m_BufferStartPosition && newPosition < (m_BufferStartPosition + m_Buffer.size())))
     {
         // seek is in the buffer range, update the offset
         m_BufferOffset = newPosition - m_BufferStartPosition;

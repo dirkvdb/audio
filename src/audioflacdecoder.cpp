@@ -34,9 +34,9 @@ FlacDecoder::FlacDecoder(const std::string& uri)
 : IDecoder(uri)
 , m_BytesPerFrame(0)
 , m_NumSamples(0)
-, m_pReader(ReaderFactory::create(uri))
+, m_Reader(ReaderFactory::createBuffered(uri, 128*1024))
 {
-    m_pReader->open(uri);
+    m_Reader->open(uri);
 
     set_md5_checking(true);
 
@@ -131,14 +131,14 @@ bool FlacDecoder::decodeAudioFrame(Frame& frame)
 
 FLAC__StreamDecoderReadStatus FlacDecoder::read_callback(FLAC__byte buffer[], size_t* pBytes)
 {
-    if (m_pReader->eof())
+    if (m_Reader->eof())
     {
         return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
     }
 
     try
     {
-        *pBytes = static_cast<size_t>(m_pReader->read(buffer, *pBytes));
+        *pBytes = static_cast<size_t>(m_Reader->read(buffer, *pBytes));
     }
     catch (std::exception& e)
     {
@@ -151,13 +151,13 @@ FLAC__StreamDecoderReadStatus FlacDecoder::read_callback(FLAC__byte buffer[], si
 
 FLAC__StreamDecoderSeekStatus FlacDecoder::seek_callback(FLAC__uint64 position)
 {
-    m_pReader->seekAbsolute(position);
+    m_Reader->seekAbsolute(position);
     return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
 }
 
 FLAC__StreamDecoderTellStatus FlacDecoder::tell_callback(FLAC__uint64* pCurrentPosition)
 {
-    *pCurrentPosition = m_pReader->currentPosition();
+    *pCurrentPosition = m_Reader->currentPosition();
     return FLAC__STREAM_DECODER_TELL_STATUS_OK;
 }
 
@@ -165,7 +165,7 @@ FLAC__StreamDecoderLengthStatus FlacDecoder::length_callback(FLAC__uint64* pStre
 {
     try
     {
-        *pStreamLength = m_pReader->getContentLength();
+        *pStreamLength = m_Reader->getContentLength();
     }
     catch (std::exception& e)
     {
@@ -178,7 +178,7 @@ FLAC__StreamDecoderLengthStatus FlacDecoder::length_callback(FLAC__uint64* pStre
 
 bool FlacDecoder::eof_callback()
 {
-    return m_pReader->eof();
+    return m_Reader->eof();
 }
 
 FLAC__StreamDecoderWriteStatus FlacDecoder::write_callback(const FLAC__Frame* pFrame, const FLAC__int32* const pBuffer[])

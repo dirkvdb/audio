@@ -97,12 +97,12 @@ Playback::~Playback()
 bool Playback::startNewTrack()
 {
     auto track = m_Playlist.dequeueNextTrack();
-    if (!track)
+    if (!track || m_Stop)
     {
         stopPlayback(true);
         return false;
     }
-
+    
     m_CurrentPts = 0.0;
 
     {

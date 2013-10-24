@@ -16,8 +16,6 @@
 
 #include "audiotaglibiostream.h"
 
-#include "utils/log.h"
-
 #include "audio/audioreaderfactory.h"
 
 using namespace TagLib;
@@ -26,28 +24,26 @@ namespace audio
 {
 
 TaglibIOStream::TaglibIOStream(const std::string& url)
-: m_Reader(ReaderFactory::create(url))
-, m_BufReader(new BufferedReader(*m_Reader, 512))
+: m_Reader(ReaderFactory::createBuffered(url, 1024*128))
+, m_Uri(url)
 {
     m_Reader->open(url);
 }
 
 TaglibIOStream::~TaglibIOStream()
 {
-    m_BufReader.reset();
-    m_Reader.reset();
 }
 
 FileName TaglibIOStream::name() const
 {
-    return m_BufReader->uri().c_str();
+    return m_Uri.c_str();
 }
 
 ByteVector TaglibIOStream::readBlock(ulong readLength)
 {
     ByteVector data;
     data.resize(static_cast<uint>(readLength));
-    data.resize(static_cast<uint>(m_BufReader->read(reinterpret_cast<uint8_t*>(data.data()), static_cast<uint>(readLength))));
+    data.resize(static_cast<uint>(m_Reader->read(reinterpret_cast<uint8_t*>(data.data()), static_cast<uint>(readLength))));
     
     return data;
 }
@@ -82,13 +78,13 @@ void TaglibIOStream::seek(long offset, Position position)
     switch (position)
     {
         case Beginning:
-            m_BufReader->seekAbsolute(offset);
+            m_Reader->seekAbsolute(offset);
             break;
         case Current:
-            m_BufReader->seekRelative(offset);
+            m_Reader->seekRelative(offset);
             break;
         case End:
-            m_BufReader->seekAbsolute((length() - 1) - offset);
+            m_Reader->seekAbsolute((length() - 1) + offset);
             break;
         default:
             throw std::logic_error("Invalid seek position");
@@ -97,17 +93,17 @@ void TaglibIOStream::seek(long offset, Position position)
 
 void TaglibIOStream::clear()
 {
-    m_BufReader.reset();
+    m_Reader->clearErrors();
 }
 
 long TaglibIOStream::tell() const
 {
-    return m_BufReader->currentPosition();
+    return m_Reader->currentPosition();
 }
 
 long TaglibIOStream::length()
 {
-    return m_BufReader->getContentLength();
+    return m_Reader->getContentLength();
 }
 
 void TaglibIOStream::truncate(long length)

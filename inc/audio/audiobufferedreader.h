@@ -30,7 +30,7 @@ namespace audio
 class BufferedReader : public utils::IReader
 {
 public:
-    BufferedReader(utils::IReader& reader, size_t bufferSize);
+    BufferedReader(std::unique_ptr<utils::IReader> reader, size_t bufferSize);
 
     void open(const std::string& filename);
 
@@ -42,17 +42,18 @@ public:
     void seekAbsolute(uint64_t position);
     void seekRelative(uint64_t offset);
     uint64_t read(uint8_t* pData, uint64_t size);
+    void clearErrors();
 
 private:
     void updateOffsetsAfterSeek(uint64_t newPosition);
 
-    utils::IReader&         m_Reader;
-    std::vector<uint8_t>    m_Buffer;
-    uint64_t                m_BufferStartPosition;
-    uint64_t                m_BufferOffset;
-    uint64_t                m_CurrentPosition;
-    uint64_t                m_ContentLength;
-    bool                    m_BufferFilled;
+    std::unique_ptr<utils::IReader> m_Reader;
+    std::vector<uint8_t>            m_Buffer;
+    uint64_t                        m_BufferStartPosition;
+    uint64_t                        m_BufferOffset;
+    uint64_t                        m_CurrentPosition;
+    uint64_t                        m_ContentLength;
+    bool                            m_BufferFilled;
 };
 
 }

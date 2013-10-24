@@ -31,6 +31,7 @@ class ReaderFactory
 public:
     static void registerBuilder(std::unique_ptr<utils::IReaderBuilder> builder);
     static utils::IReader* create(const std::string& uri);
+    static utils::IReader* createBuffered(const std::string& filepath, uint32_t bufferSize);
     
 private:
     static std::vector<std::unique_ptr<utils::IReaderBuilder>>  m_Builders;

@@ -39,7 +39,7 @@ class BufferedReaderTest : public Test
 {
 public:
     BufferedReaderTest()
-    : reader(fileReader, 10)
+    : reader(std::unique_ptr<utils::IReader>(new FileReader()), 10)
     {
     }
 
@@ -67,7 +67,6 @@ protected:
         EXPECT_NO_THROW(fileops::deleteFile(g_testFile));
     }
     
-    FileReader              fileReader;
     BufferedReader          reader;
     std::vector<uint8_t>    data;
 };

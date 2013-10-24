@@ -51,11 +51,21 @@ uint64_t FileReader::currentPosition()
 
 void FileReader::seekAbsolute(uint64_t position)
 {
+    if (eof())
+    {
+        clearErrors();
+    }
+
     m_File.seekg(position);
 }
 
 void FileReader::seekRelative(uint64_t offset)
 {
+    if (eof())
+    {
+        clearErrors();
+    }
+
     m_File.seekg(offset, std::ios::cur);
 }
 
@@ -73,6 +83,11 @@ uint64_t FileReader::read(uint8_t* pData, uint64_t size)
 {
     m_File.read(reinterpret_cast<char*>(pData), size);
     return m_File.gcount();
+}
+
+void FileReader::clearErrors()
+{
+    m_File.clear();
 }
 
 }

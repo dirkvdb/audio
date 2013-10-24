@@ -19,6 +19,7 @@
 #include <stdexcept>
 
 #include "audio/audiofilereader.h"
+#include "audio/audiobufferedreader.h"
 #include "utils/log.h"
 
 #include "audioconfig.h"
@@ -45,6 +46,11 @@ utils::IReader* ReaderFactory::create(const std::string& uri)
 
     // by default just try to read it from the filesystem
     return new FileReader();
+}
+
+utils::IReader* ReaderFactory::createBuffered(const std::string& filepath, uint32_t bufferSize)
+{
+    return new BufferedReader(std::unique_ptr<utils::IReader>(create(filepath)), bufferSize);
 }
 
 }
