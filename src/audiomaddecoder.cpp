@@ -21,12 +21,10 @@
 #include <cstring>
 #include <stdexcept>
 
-#include "audio/audioreaderfactory.h"
 #include "audio/audioframe.h"
 #include "audio/audioformat.h"
-#include "audio/audiobufferedreader.h"
 #include "utils/log.h"
-#include "utils/readerinterface.h"
+#include "utils/readerfactory.h"
 #include "utils/fileoperations.h"
 #include "utils/numericoperations.h"
 

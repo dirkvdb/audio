@@ -11,8 +11,6 @@ INCLUDE_DIRECTORIES(
 ADD_EXECUTABLE(audiotest
 	gmock-gtest-all.cpp
 	main.cpp
-
-    bufferedreadertest.cpp
 )
 
 LINK_DIRECTORIES(

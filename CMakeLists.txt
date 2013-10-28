@@ -81,8 +81,6 @@ SET (AUDIO_SRC_LIST
     src/audiobuffer.h                   src/audiobuffer.h
     inc/audio/audiodecoder.h
     inc/audio/audiodecoderfactory.h     src/audiodecoderfactory.cpp
-    inc/audio/audiofilereader.h         src/audiofilereader.cpp
-    inc/audio/audiobufferedreader.h     src/audiobufferedreader.cpp
     inc/audio/audioformat.h
     inc/audio/audioflacheaders.h
     inc/audio/audioframe.h              src/audioframe.cpp
@@ -91,7 +89,6 @@ SET (AUDIO_SRC_LIST
     inc/audio/audioplaybackfactory.h    src/audioplaybackfactory.cpp
     src/audioplayback.h                 src/audioplayback.cpp
     inc/audio/audioplaylistinterface.h
-    inc/audio/audioreaderfactory.h      src/audioreaderfactory.cpp
     inc/audio/audiorenderer.h
     inc/audio/audiorendererfactory.h    src/audiorendererfactory.cpp
     inc/audio/audiotrackinterface.h

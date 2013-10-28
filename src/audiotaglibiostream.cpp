@@ -16,7 +16,7 @@
 
 #include "audiotaglibiostream.h"
 
-#include "audio/audioreaderfactory.h"
+#include "utils/readerfactory.h"
 
 using namespace TagLib;
 
@@ -24,7 +24,7 @@ namespace audio
 {
 
 TaglibIOStream::TaglibIOStream(const std::string& url)
-: m_Reader(ReaderFactory::createBuffered(url, 1024*128))
+: m_Reader(utils::ReaderFactory::createBuffered(url, 1024*128))
 , m_Uri(url)
 {
     m_Reader->open(url);

@@ -20,9 +20,9 @@
 #include <cassert>
 #include <mutex>
 
-#include "audio/audioreaderfactory.h"
 #include "audio/audioframe.h"
 #include "utils/log.h"
+#include "utils/readerfactory.h"
 
 using namespace std;
 using namespace utils;

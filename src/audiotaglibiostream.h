@@ -24,7 +24,6 @@
 #include <string>
 
 #include "utils/readerinterface.h"
-#include "audio/audiobufferedreader.h"
 
 namespace audio
 {

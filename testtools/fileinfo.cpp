@@ -3,10 +3,10 @@
 
 #include "utils/log.h"
 #include "utils/fileoperations.h"
-#include "audio/audiompegutils.h"
-#include "audio/audiofilereader.h"
+#include "utils/filereader.h"
+#include "utils/bufferedreader.h"
 #include "audio/audiometadata.h"
-#include "audio/audiobufferedreader.h"
+#include "audio/audiompegutils.h"
 
 using namespace std;
 using namespace utils;
