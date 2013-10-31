@@ -18,6 +18,8 @@
 
 #include "utils/readerfactory.h"
 
+#include <stdexcept>
+
 using namespace TagLib;
 
 namespace audio
