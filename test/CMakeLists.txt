@@ -8,20 +8,22 @@ INCLUDE_DIRECTORIES(
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-ADD_EXECUTABLE(audiotest
-	gmock-gtest-all.cpp
-	main.cpp
-)
-
 LINK_DIRECTORIES(
     ${AUDIO_LIBRARY_DIRS}
 )
 
-TARGET_LINK_LIBRARIES(audiotest
-	-lpthread
-	${UTILS_LIBRARIES}
-	${AUDIO_LIBRARIES}
-)
 
-ADD_TEST(AudioTests audiotest)
- 
+IF (BUILD_TESTING)
+    ADD_EXECUTABLE(audiotest
+        gmock-gtest-all.cpp
+        main.cpp
+    )
+
+    TARGET_LINK_LIBRARIES(audiotest
+        -lpthread
+        ${UTILS_LIBRARIES}
+        ${AUDIO_LIBRARIES}
+    )
+
+    ADD_TEST(AudioTests audiotest)
+ENDIF (BUILD_TESTING)
