@@ -122,7 +122,7 @@ void OpenALRenderer::queueFrame(const Frame& frame)
         frameData.resize(frame.getDataSize() / sizeof(float));
         
         const float* pData = reinterpret_cast<float*>(frame.getFrameData());
-        for (int i = 0; i < frameData.size(); ++i)
+        for (auto i = 0u; i < frameData.size(); ++i)
         {
             float sample = numericops::clip(*pData++, -1.f, 1.f);
             frameData[i] = static_cast<int16_t>(sample * 32768.f);
