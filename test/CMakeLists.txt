@@ -13,17 +13,16 @@ LINK_DIRECTORIES(
 )
 
 
-IF (BUILD_TESTING)
-    ADD_EXECUTABLE(audiotest
-        gmock-gtest-all.cpp
-        main.cpp
-    )
+ADD_EXECUTABLE(audiotest EXCLUDE_FROM_ALL
+    gmock-gtest-all.cpp
+    main.cpp
+)
 
-    TARGET_LINK_LIBRARIES(audiotest
-        -lpthread
-        ${UTILS_LIBRARIES}
-        ${AUDIO_LIBRARIES}
-    )
+TARGET_LINK_LIBRARIES(audiotest
+    -lpthread
+    ${UTILS_LIBRARIES}
+    ${AUDIO_LIBRARIES}
+)
 
-    ADD_TEST(AudioTests audiotest)
-ENDIF (BUILD_TESTING)
+ADD_TEST(AudioTests audiotest)
+ADD_DEPENDENCIES(check audiotest)
