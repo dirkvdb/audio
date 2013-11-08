@@ -183,11 +183,6 @@ bool MadDecoder::readDataIfNecessary()
             mad_stream_buffer(&m_MadStream, &m_InputBuffer[0], static_cast<size_t>(readBytes) + choppedFrameSize + MAD_BUFFER_GUARD);
             m_InputBufSize = static_cast<uint32_t>(static_cast<size_t>(readBytes) + choppedFrameSize);
         }
-        //else if (m_FileStream.fail())
-        //{
-        //    log::critical("Mad: Failed to read from file: %s", m_Filepath);
-        //    m_MadStream.error = MAD_ERROR_BUFPTR;
-        //}
         else
         {
             mad_stream_buffer(&m_MadStream, &m_InputBuffer[0], INPUT_BUFFER_SIZE);

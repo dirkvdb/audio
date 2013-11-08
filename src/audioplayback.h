@@ -44,7 +44,7 @@ class ITrack;
 class Playback : public IPlayback
 {
 public:
-    Playback(IPlaylist& playlist, const std::string& audioOutput, const std::string& deviceName);
+    Playback(IPlaylist& playlist, const std::string& appName, const std::string& audioOutput, const std::string& deviceName);
     virtual ~Playback();
 
     void play();
@@ -80,12 +80,6 @@ private:
     std::unique_ptr<IDecoder>               m_pAudioDecoder;
     std::unique_ptr<IRenderer>              m_pAudioRenderer;
 
-    std::thread                             m_PlaybackThread;
-    std::condition_variable                 m_PlaybackCondition;
-    mutable std::mutex                      m_PlaybackMutex;
-    mutable std::recursive_mutex            m_DecodeMutex;
-    
-    
     IPlaylist&                              m_Playlist;
     bool                                    m_Destroy;
     bool                                    m_Stop;
@@ -98,6 +92,11 @@ private:
     Frame                                   m_AudioFrame;
     std::set<PlaybackAction>                m_AvailableActions;
     std::shared_ptr<ITrack>                 m_CurrentTrack;
+    
+    std::condition_variable                 m_PlaybackCondition;
+    mutable std::mutex                      m_PlaybackMutex;
+    mutable std::recursive_mutex            m_DecodeMutex;
+    std::thread                             m_PlaybackThread;
 
 #ifdef DUMP_TO_WAVE
     std::ofstream                           m_WaveFile;

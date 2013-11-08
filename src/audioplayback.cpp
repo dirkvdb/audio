@@ -40,7 +40,7 @@ using namespace utils;
 namespace audio
 {
 
-Playback::Playback(IPlaylist& playlist, const std::string& audioOutput, const std::string& deviceName)
+Playback::Playback(IPlaylist& playlist, const std::string& appName, const std::string& audioOutput, const std::string& deviceName)
 : m_Playlist(playlist)
 , m_Destroy(false)
 , m_Stop(false)
@@ -49,19 +49,17 @@ Playback::Playback(IPlaylist& playlist, const std::string& audioOutput, const st
 , m_SkipTrack(false)
 , m_SeekOccured(false)
 , m_CurrentPts(0)
+, m_PlaybackThread(&Playback::playbackLoop, this)
 {
     try
     {
-        m_pAudioRenderer.reset(audio::RendererFactory::create("doozy", audioOutput, deviceName));
+        m_pAudioRenderer.reset(audio::RendererFactory::create(appName, audioOutput, deviceName));
         m_pAudioRenderer->VolumeChanged.connect([this] (int32_t volume) { VolumeChanged(volume); }, this);
     }
     catch (std::exception&)
     {
         log::error("Failed to create audio renderer, sound is disabled");
     }
-    
-    m_PlaybackThread = std::thread(&Playback::playbackLoop, this);
-        
 
 #ifdef DUMP_TO_WAVE
     log::critical("Dumping to wave is enabled, we are debugging right?");
@@ -73,7 +71,6 @@ Playback::Playback(IPlaylist& playlist, const std::string& audioOutput, const st
 Playback::~Playback()
 {
     stop();
-    m_Destroy = true;
 
 #ifdef DUMP_TO_WAVE
     updateWaveHeaderSize();
@@ -84,8 +81,12 @@ Playback::~Playback()
         m_pAudioRenderer->VolumeChanged.disconnect(this);
     }
     
-    m_PlaybackCondition.notify_all();
-
+    {
+        std::lock_guard<std::mutex> lock(m_PlaybackMutex);
+        m_Destroy = true;
+        m_PlaybackCondition.notify_one();
+    }
+    
     if (m_PlaybackThread.joinable())
     {
         log::debug("Waiting for playback thread");

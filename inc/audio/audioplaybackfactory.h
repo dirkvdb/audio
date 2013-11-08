@@ -28,7 +28,7 @@ class IPlaylist;
 class PlaybackFactory
 {
 public:
-    static IPlayback* create(const std::string& engine, const std::string& audioOutput, const std::string& audioDevice, audio::IPlaylist& playlist);
+    static IPlayback* create(const std::string& engine, const std::string& appName, const std::string& audioOutput, const std::string& audioDevice, audio::IPlaylist& playlist);
 };
 
 }
