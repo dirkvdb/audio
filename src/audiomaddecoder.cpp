@@ -102,7 +102,7 @@ double MadDecoder::getDuration()
 
 size_t MadDecoder::getFrameSize()
 {
-    return m_MpegHeader.samplesPerFrame * m_MpegHeader.numChannels * 2 /* 16 bits / 2 */; ;
+    return m_MpegHeader.samplesPerFrame * m_MpegHeader.numChannels * 2;
 }
 
 void MadDecoder::seekAbsolute(double time)
@@ -353,7 +353,7 @@ bool MadDecoder::decodeAudioFrame(Frame& frame, bool processSamples)
     }
     else if (m_Reader->eof() && ((&m_InputBuffer[m_InputBufSize] - m_MadStream.next_frame) <= 128))
     {
-        //final frame of file has just been proccessed
+        //final frame of file has just been processed
         uint32_t paddingBytes = m_LameHeader.zeroPadding * m_MpegHeader.numChannels * 2 /*16 / 8*/;
         if (paddingBytes >= m_OutputBuffer.size())
         {
