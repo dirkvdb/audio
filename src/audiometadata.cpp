@@ -59,11 +59,11 @@ using namespace TagLib;
 namespace audio
 {
 
-static std::shared_ptr<TagLib::File> createFile(TagLib::IOStream& iostream, bool readAudioProperties, AudioProperties::ReadStyle audioPropertiesStyle);
+static std::shared_ptr<TagLib::File> createFile(TagLib::IOStream& iostream, Metadata::ReadAudioProperties props, AudioProperties::ReadStyle audioPropertiesStyle);
 
-Metadata::Metadata(const std::string& uri)
+Metadata::Metadata(const std::string& uri, ReadAudioProperties props)
 : m_IoStream(new TaglibIOStream(uri))
-, m_TagFile(createFile(*m_IoStream, false, AudioProperties::Fast))
+, m_TagFile(createFile(*m_IoStream, props, AudioProperties::Fast))
 {
     throwIfNotValid();
 }
@@ -314,8 +314,9 @@ void Metadata::throwIfNotValid() const
     }
 }
 
-static std::shared_ptr<TagLib::File> createFile(TagLib::IOStream& ioStream, bool readAudioProperties, AudioProperties::ReadStyle audioPropertiesStyle)
+static std::shared_ptr<TagLib::File> createFile(TagLib::IOStream& ioStream, Metadata::ReadAudioProperties props, AudioProperties::ReadStyle audioPropertiesStyle)
 {
+    bool readAudioProperties = props == Metadata::ReadAudioProperties::Yes;
     std::string filename = ioStream.name();
     std::string ext = stringops::uppercase(fileops::getFileExtension(ioStream.name()));
 

@@ -50,8 +50,14 @@ public:
         ImageFormat             format;
         std::vector<uint8_t>    data;
     };
+    
+    enum class ReadAudioProperties
+    {
+        Yes,
+        No
+    };
 
-    Metadata(const std::string& filepath);
+    Metadata(const std::string& filepath, ReadAudioProperties props);
 
     std::string getArtist();
     std::string getTitle();
