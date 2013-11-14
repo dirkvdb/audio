@@ -99,6 +99,7 @@ void OpenALRenderer::setFormat(const Format& format)
     }
 
     m_Frequency = format.rate;
+    m_SampleSize = (format.bits / 8) * format.numChannels;
 }
 
 bool OpenALRenderer::hasBufferSpace(uint32_t dataSize)
@@ -112,6 +113,15 @@ bool OpenALRenderer::hasBufferSpace(uint32_t dataSize)
     }
 
     return queued < NUM_BUFFERS;
+}
+
+double OpenALRenderer::getBufferDuration()
+{
+    int queued = 0;
+    alGetSourcei(m_AudioSource, AL_BUFFERS_QUEUED, &queued);
+    
+    double singleBufferDuration = m_Frequency / static_cast<double>(m_FrameSize / static_cast<double>(m_SampleSize));
+    return queued * singleBufferDuration;
 }
 
 void OpenALRenderer::queueFrame(const Frame& frame)
@@ -138,6 +148,7 @@ void OpenALRenderer::queueFrame(const Frame& frame)
     
     alSourceQueueBuffers(m_AudioSource, 1, &m_AudioBuffers[m_CurrentBuffer]);
     m_PtsQueue.push_back(frame.getPts());
+    m_FrameSize = frame.getDataSize();
 
     ++m_CurrentBuffer;
     m_CurrentBuffer %= NUM_BUFFERS;
@@ -147,22 +158,6 @@ void OpenALRenderer::queueFrame(const Frame& frame)
     {
         log::warn("Openal queueFrame error %d", err);
     }
-}
-
-void OpenALRenderer::clearBuffers()
-{
-    stop(false);
-
-    int queued = 0;
-    alGetSourcei(m_AudioSource, AL_BUFFERS_QUEUED, &queued);
-
-    if (queued > 0)
-    {
-        ALuint* buffers = new ALuint[queued];
-        alSourceUnqueueBuffers(m_AudioSource, queued, buffers);
-        delete[] buffers;
-    }
-    m_PtsQueue.clear();
 }
 
 void OpenALRenderer::flushBuffers()
@@ -217,11 +212,6 @@ void OpenALRenderer::stop(bool drain)
 {
     alSourceStop(m_AudioSource);
     flushBuffers();
-}
-
-int OpenALRenderer::getBufferSize()
-{
-    return NUM_BUFFERS;
 }
 
 void OpenALRenderer::setVolume(int32_t volume)

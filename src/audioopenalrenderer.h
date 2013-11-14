@@ -23,7 +23,7 @@
 #include <deque>
 #include "audio/audiorenderer.h"
 
-#define NUM_BUFFERS 100
+#define NUM_BUFFERS 200
 
 namespace audio
 {
@@ -37,23 +37,23 @@ public:
     OpenALRenderer();
     virtual ~OpenALRenderer();
 
-    void setFormat(const Format& format);
-    bool hasBufferSpace(uint32_t dataSize);
-    void queueFrame(const Frame& frame);
-    void clearBuffers();
-    void flushBuffers();
-    int getBufferSize();
-    double getCurrentPts();
-    void play();
-    void pause();
-    void resume();
-    void stop(bool drain);
-    void setVolume(int32_t volume);
-    int32_t getVolume();
-    void setMute(bool enabled);
-    bool getMute();
-    bool isPlaying();
-
+    // IRenderer
+    void setFormat(const Format& format) override;
+    void play() override;
+    void pause() override;
+    void resume() override;
+    void stop(bool drain) override;
+    void setVolume(int32_t volume) override;
+    int32_t getVolume() override;
+    void setMute(bool enabled) override;
+    bool getMute() override;
+    bool isPlaying() override;
+    bool hasBufferSpace(uint32_t dataSize) override;
+    double getBufferDuration() override;
+    void flushBuffers() override;
+    void queueFrame(const Frame& frame) override;
+    double getCurrentPts() override;
+    
 private:
     ALCdevice*          m_pAudioDevice;
     ALCcontext*         m_pAlcContext;
@@ -65,6 +65,8 @@ private:
     bool                m_FloatingPoint;
     ALenum              m_AudioFormat;
     ALsizei             m_Frequency;
+    uint32_t            m_FrameSize; //size one queued audio frame
+    uint32_t            m_SampleSize; //size one audio sample
 
     std::deque<double>  m_PtsQueue;
 };

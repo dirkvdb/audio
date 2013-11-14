@@ -45,6 +45,7 @@ public:
     virtual bool isPlaying() = 0;
 
     virtual bool hasBufferSpace(uint32_t dataSize) = 0;
+    virtual double getBufferDuration() = 0;
     virtual void flushBuffers() = 0;
     virtual void queueFrame(const Frame& frame) = 0;
 
