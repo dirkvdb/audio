@@ -54,6 +54,8 @@ public:
     bool isPlaying();
 
     bool hasBufferSpace(uint32_t dataSize);
+    double getBufferDuration();
+    
     void flushBuffers();
     void queueFrame(const Frame& frame);
 
@@ -76,7 +78,7 @@ private:
     pa_stream*                  m_pStream;
     pa_channel_map              m_ChannelMap;
     pa_sample_spec              m_SampleFormat;
-    Format                      m_AudioFormat;
+    Format                      m_Format;
     pa_cvolume                  m_Volume;
     int32_t                     m_VolumeInt;
     int32_t                     m_VolumeAtMute;
@@ -86,6 +88,7 @@ private:
     double                      m_LastPts;
     pa_usec_t                   m_Latency;
     uint32_t                    m_FrameSize;
+    uint32_t                    m_HWBufferSize;
     
     Buffer                      m_Buffer;
 };

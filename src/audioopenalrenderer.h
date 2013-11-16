@@ -23,7 +23,7 @@
 #include <deque>
 #include "audio/audiorenderer.h"
 
-#define NUM_BUFFERS 200
+#define NUM_BUFFERS 100
 
 namespace audio
 {

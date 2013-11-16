@@ -321,6 +321,16 @@ bool AlsaRenderer::hasBufferSpace(uint32_t dataSize)
     return m_Buffer.bytesFree() >= static_cast<uint32_t>(dataSize);
 }
 
+double AlsaRenderer::getBufferDuration()
+{
+    snd_pcm_sframes_t available = snd_pcm_avail_update(m_pAudioDevice);
+    uint32_t availableBytes = snd_pcm_frames_to_bytes(m_pAudioDevice, available);
+    uint32_t bufferSize = snd_pcm_frames_to_bytes(m_pAudioDevice, m_BufferSize);
+
+    auto bytesInBuffer = bufferSize - availableBytes;
+    return static_cast<double>(bytesInBuffer / (m_Format.bits / 8.0)) / m_Format.rate;
+}
+
 bool AlsaRenderer::isPlaying()
 {
     return getDeviceStatus() == SND_PCM_STATE_RUNNING;
@@ -339,7 +349,7 @@ void AlsaRenderer::flushBuffers()
     snd_pcm_sframes_t available = snd_pcm_avail_update(m_pAudioDevice);
     uint32_t availableBytes = snd_pcm_frames_to_bytes(m_pAudioDevice, available);
     
-    //log::debug("Alsa av:", availableBytes, "Buf av:", m_Buffer.bytesUsed(), m_PeriodSize, m_BufferSize);
+    //log::debug("Alsa av: %d Buf av: %d (%d - %d)", availableBytes, m_Buffer.bytesUsed(), m_PeriodSize, m_BufferSize);
 
     if (availableBytes != 0 && m_Buffer.bytesUsed() > availableBytes)
     {
@@ -350,17 +360,17 @@ void AlsaRenderer::flushBuffers()
 
         if (size > availableBytes)
         {
-            log::warn("Frame is bigger than available size: frameSize: %s Avail: %s", dataFrames, available);
+            log::warn("Frame is bigger than available size: frameSize: %d Avail: %d", dataFrames, available);
         }
 
-        //log::debug("Write frame: alsaAvB:", availableBytes, "AudioBufAvB", size, m_Buffer.bytesUsed());
+        //log::debug("Write frame: alsaAvB: %d AudioBufAvB %d %d", availableBytes, size, m_Buffer.bytesUsed());
         snd_pcm_sframes_t status = snd_pcm_writei(m_pAudioDevice, pData, dataFrames);
 
         if (status < 0)
         {
             if (status == -EPIPE)
             {
-                log::warn("Alsa: Failed to write frame data: underrun occured (%s)", snd_strerror(status), m_Buffer.bytesUsed());
+                log::warn("Alsa: Failed to write frame data: underrun occured (%s) %d", snd_strerror(status), m_Buffer.bytesUsed());
                 snd_pcm_prepare(m_pAudioDevice);
                 snd_pcm_start(m_pAudioDevice);
             }

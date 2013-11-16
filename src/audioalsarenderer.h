@@ -46,6 +46,7 @@ public:
     bool getMute();
 
     bool hasBufferSpace(uint32_t dataSize);
+    double getBufferDuration() override;
     void flushBuffers();
     void queueFrame(const Frame& frame);
 

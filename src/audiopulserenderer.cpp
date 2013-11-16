@@ -44,6 +44,7 @@ PulseRenderer::PulseRenderer(const std::string& name)
 , m_LastPts(0.0)
 , m_Latency(0)
 , m_FrameSize(0)
+, m_HWBufferSize(0)
 , m_Buffer(256 * 1024)
 {
     memset(&m_SampleFormat, 0, sizeof(pa_sample_spec));
@@ -87,7 +88,7 @@ void PulseRenderer::setFormat(const Format& format)
 {
     assert(m_pPulseContext);
 
-    if (m_AudioFormat == format)
+    if (m_Format == format)
     {
         return;
     }
@@ -136,17 +137,21 @@ void PulseRenderer::setFormat(const Format& format)
         throw logic_error("PulseRenderer: Invalid sample specification");
     }
 
-    m_AudioFormat = format;
+    m_Format = format;
 }
 
 bool PulseRenderer::hasBufferSpace(uint32_t dataSize)
 {
-    if (!m_pStream || !m_IsPlaying)
-    {
-        return false;
-    }
-
     return dataSize <= m_Buffer.bytesFree();
+}
+    
+double PulseRenderer::getBufferDuration()
+{
+    pa_threaded_mainloop_lock(m_pPulseLoop);
+    size_t bytesInBuffer = pa_stream_writable_size(m_pStream);
+    pa_threaded_mainloop_unlock(m_pPulseLoop);
+    
+    return static_cast<double>((m_HWBufferSize - bytesInBuffer) / (m_Format.bits / 8.0)) / m_Format.rate;
 }
 
 bool PulseRenderer::pulseIsReady()
@@ -191,7 +196,7 @@ void PulseRenderer::play()
         pa_threaded_mainloop_lock(m_pPulseLoop);
         m_pStream = pa_stream_new(m_pPulseContext, "Music playback", &m_SampleFormat, nullptr);
         assert(m_pStream);
-
+        
         pa_stream_set_state_callback(m_pStream, PulseRenderer::streamStateCb, this);
         pa_stream_set_underflow_callback(m_pStream, PulseRenderer::streamUnderflowCb, this);
         if (pa_stream_connect_playback(m_pStream, nullptr, nullptr, static_cast<pa_stream_flags_t>(0), pa_cvolume_set(&m_Volume, m_SampleFormat.channels, m_VolumeInt * PA_VOLUME_NORM / 100), nullptr))
@@ -216,7 +221,10 @@ void PulseRenderer::play()
                 throw logic_error("Failed to start pulseaudio playback");
             }
         }
-
+        
+        auto attr = pa_stream_get_buffer_attr(m_pStream);
+        m_HWBufferSize = attr->tlength;
+        
         pa_threaded_mainloop_unlock(m_pPulseLoop);
     }
 }
@@ -399,7 +407,7 @@ double PulseRenderer::getCurrentPts()
     }
 
     pa_threaded_mainloop_unlock(m_pPulseLoop);
-    double bufferDelay = m_Buffer.bytesUsed() / static_cast<double>(m_FrameSize * m_AudioFormat.rate);
+    double bufferDelay = m_Buffer.bytesUsed() / static_cast<double>(m_FrameSize * m_Format.rate);
     return std::max(0.0, m_LastPts - (m_Latency / 1000000.0) - bufferDelay);
 }
 

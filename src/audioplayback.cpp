@@ -223,8 +223,7 @@ void Playback::playback()
         else
         {
             // don't busy wait
-            double sleepTime = m_pAudioRenderer->getBufferDuration() / 2;
-            //log::info("Sleep time %f", sleepTime);
+            double sleepTime = m_pAudioRenderer->getBufferDuration() * 1000 / 3;
             timeops::sleepMs(sleepTime);
         }
     }

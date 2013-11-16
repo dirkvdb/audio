@@ -99,7 +99,7 @@ void OpenALRenderer::setFormat(const Format& format)
     }
 
     m_Frequency = format.rate;
-    m_SampleSize = (format.bits / 8) * format.numChannels;
+    m_SampleSize = format.bits / 8;
 }
 
 bool OpenALRenderer::hasBufferSpace(uint32_t dataSize)
@@ -120,7 +120,7 @@ double OpenALRenderer::getBufferDuration()
     int queued = 0;
     alGetSourcei(m_AudioSource, AL_BUFFERS_QUEUED, &queued);
     
-    double singleBufferDuration = m_Frequency / static_cast<double>(m_FrameSize / static_cast<double>(m_SampleSize));
+    double singleBufferDuration = static_cast<double>(m_FrameSize / static_cast<double>(m_SampleSize)) / m_Frequency;
     return queued * singleBufferDuration;
 }
 
