@@ -22,14 +22,20 @@ int main(int argc, char** argv)
             return -1;
         }
         
-        Metadata meta(argv[1]);
+        Metadata meta(argv[1], Metadata::ReadAudioProperties::Yes);
         log::info("Artist: %s", meta.getArtist());
         log::info("Title: %s", meta.getTitle());
         
         auto data = meta.getAlbumArt();
-        ofstream ostr("cover.jpg", std::ios::binary);
-        ostr.write(reinterpret_cast<const char*>(data.data.data()), data.data.size());
-        ostr.close();
+        if (!data.data.empty())
+        {
+            ofstream ostr("cover.jpg", std::ios::binary);
+            ostr.write(reinterpret_cast<const char*>(data.data.data()), data.data.size());
+        }
+        else
+        {
+            log::warn("No album art found");
+        }
         
         BufferedReader reader(std::unique_ptr<FileReader>(new FileReader()), 512);
         reader.open(argv[1]);
