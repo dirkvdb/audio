@@ -355,7 +355,9 @@ void AlsaRenderer::flushBuffers()
     {
         uint32_t size = availableBytes;
         uint8_t* pData = m_Buffer.getData(size);
-
+        
+        applyVolume(pData, size);
+    
         snd_pcm_sframes_t dataFrames = snd_pcm_bytes_to_frames(m_pAudioDevice, size);
 
         if (size > availableBytes)
@@ -409,29 +411,26 @@ void AlsaRenderer::queueFrame(const Frame& frame)
         throw logic_error("Alsarenderer: Audio format was never set");
     }
 
-    applyVolume(frame);
     m_Buffer.writeData(frame.getFrameData(), frame.getDataSize());
     m_LastPts = frame.getPts();
 
     flushBuffers();
 }
 
-void AlsaRenderer::applyVolume(const Frame& frame)
+void AlsaRenderer::applyVolume(uint8_t* pData, uint32_t dataSize)
 {
     if (m_Volume == 100)
     {
         return;
     }
 
-    uint8_t* pFrameData = frame.getFrameData();
-
     if (m_Format.bits == 16)
     {
         int scaleFactor = (m_Volume * 256) / 100;
 
-        for (uint32_t i = 0; i < frame.getDataSize(); i+=2)
+        for (uint32_t i = 0; i < dataSize; i+=2)
         {
-            short* pSample = reinterpret_cast<short*>(&pFrameData[i]);
+            short* pSample = reinterpret_cast<short*>(&pData[i]);
             int sample = ((*pSample) * scaleFactor + 128) >> 8;
             numericops::clip(sample, -32768, 32767);
             *pSample = sample;
@@ -441,9 +440,9 @@ void AlsaRenderer::applyVolume(const Frame& frame)
     {
         float scaleFactor = m_Volume / 100.0;
 
-        for (uint32_t i = 0; i < frame.getDataSize(); i+=4)
+        for (uint32_t i = 0; i < dataSize; i+=4)
         {
-            float* pSample = reinterpret_cast<float*>(pFrameData[i]);
+            float* pSample = reinterpret_cast<float*>(pData[i]);
             *pSample = static_cast<float>(*pSample * scaleFactor);
         }
     }

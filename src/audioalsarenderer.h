@@ -60,7 +60,7 @@ private:
     std::string getDeviceStatusString(snd_pcm_state_t status);
     void setHardwareParams(snd_pcm_format_t format, uint32_t channels, uint32_t rate);
     void setSoftwareParams();
-    void applyVolume(const Frame& frame);
+    void applyVolume(uint8_t* pData, uint32_t dataSize);
 
     snd_pcm_t*              m_pAudioDevice;
     snd_pcm_uframes_t       m_BufferSize;
