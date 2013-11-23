@@ -148,7 +148,7 @@ void OpenALRenderer::queueFrame(const Frame& frame)
     
     alSourceQueueBuffers(m_AudioSource, 1, &m_AudioBuffers[m_CurrentBuffer]);
     m_PtsQueue.push_back(frame.getPts());
-    m_FrameSize = frame.getDataSize();
+    m_FrameSize = static_cast<uint32_t>(frame.getDataSize());
 
     ++m_CurrentBuffer;
     m_CurrentBuffer %= NUM_BUFFERS;
