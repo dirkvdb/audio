@@ -19,13 +19,12 @@
 
 #include <string>
 
-#include "utils/types.h"
+#include "audio/audioformat.h"
 
 namespace audio
 {
 
 class Frame;
-struct Format;
 
 class IDecoder
 {

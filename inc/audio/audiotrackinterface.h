@@ -23,7 +23,7 @@ namespace audio
 class ITrack
 {
 public:
-    ~ITrack() {}
+    virtual ~ITrack() {}
     
     virtual std::string getUri() const = 0;
 };

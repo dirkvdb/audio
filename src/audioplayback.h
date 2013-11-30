@@ -27,7 +27,6 @@
 
 #include "audio/audioframe.h"
 #include "audio/audioplaybackinterface.h"
-#include "utils/signal.h"
 
 
 //#define DUMP_TO_WAVE
