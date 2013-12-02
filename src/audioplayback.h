@@ -71,7 +71,7 @@ private:
     void stopPlayback(bool drain);
     bool startNewTrack();
     void sendProgressIfNeeded();
-    void playback();
+    void playback(std::unique_lock<std::mutex>& lock);
     void playbackLoop();
     bool rendererHasSpace(size_t dataSize);
     void setPlaybackState(PlaybackState state);

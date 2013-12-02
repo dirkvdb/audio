@@ -18,6 +18,7 @@
 
 #include <iomanip>
 #include <cmath>
+#include <chrono>
 #include <cassert>
 #include <cstring>
 
@@ -144,7 +145,7 @@ bool Playback::startNewTrack()
     return true;
 }
 
-void Playback::playback()
+void Playback::playback(std::unique_lock<std::mutex>& lock)
 {
     if (!startNewTrack())
     {
@@ -155,7 +156,7 @@ void Playback::playback()
     
     bool frameDecoded = false;
     bool firstFrame = true;
-
+    
     while (!m_Stop)
     {
         while (!m_Stop && !isPaused() && rendererHasSpace(m_AudioFrame.getDataSize()))
@@ -188,7 +189,6 @@ void Playback::playback()
                 break;
             }
 
-            std::lock_guard<std::mutex> lock(m_PlaybackMutex);
             m_pAudioRenderer->queueFrame(m_AudioFrame);
             
             #ifdef DUMP_TO_WAVE
@@ -216,15 +216,12 @@ void Playback::playback()
         if (m_State == PlaybackState::Playing && !m_pAudioRenderer->isPlaying())
         {
             log::debug("Kick renderer");
-            
-            std::lock_guard<std::mutex> lock(m_PlaybackMutex);
             m_pAudioRenderer->play();
         }
         else
         {
             // don't busy wait
-            double sleepTime = m_pAudioRenderer->getBufferDuration() * 1000 / 3;
-            timeops::sleepMs(sleepTime);
+            m_PlaybackCondition.wait_for(lock, std::chrono::milliseconds(static_cast<long>(m_pAudioRenderer->getBufferDuration() * 1000 / 3)));
         }
     }
 }
@@ -233,7 +230,6 @@ bool Playback::rendererHasSpace(size_t dataSize)
 {
     if (m_pAudioRenderer)
     {
-        std::lock_guard<std::mutex> lock(m_PlaybackMutex);
         return m_pAudioRenderer->hasBufferSpace(static_cast<uint32_t>(dataSize));
     }
 
@@ -273,7 +269,7 @@ void Playback::play()
 
     if (m_State == PlaybackState::Stopped)
     {
-        m_PlaybackCondition.notify_all();
+        m_PlaybackCondition.notify_one();
     }
     else if (m_State == PlaybackState::Paused)
     {
@@ -310,6 +306,7 @@ void Playback::stopPlayback(bool drain)
         setPlaybackState(PlaybackState::Stopped);
         m_SeekOccured = false;
         m_NewTrackStarted = false;
+        m_PlaybackCondition.notify_one();
     }
 }
 
@@ -434,12 +431,10 @@ void Playback::playbackLoop()
 {
     while (!m_Destroy)
     {
-        {
-            log::debug("Wait %d", m_Destroy);
-            std::unique_lock<std::mutex> lock(m_PlaybackMutex);
-            m_PlaybackCondition.wait(lock);
-            log::debug("Condition signaled playback (stop = %d)", m_Stop);
-        }
+        log::debug("Wait %d", m_Destroy);
+        std::unique_lock<std::mutex> lock(m_PlaybackMutex);
+        m_PlaybackCondition.wait(lock);
+        log::debug("Condition signaled playback (stop = %d)", m_Stop);
 
         if (m_Destroy)
         {
@@ -449,7 +444,7 @@ void Playback::playbackLoop()
         try
         {
             m_Stop = m_SkipTrack = false;
-            playback();
+            playback(lock);
         }
         catch (exception& e)
         {
