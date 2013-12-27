@@ -291,6 +291,7 @@ void Playback::pause()
 
 void Playback::stop()
 {
+    std::lock_guard<std::mutex> lock(m_PlaybackMutex);
     stopPlayback(false);
 }
 
@@ -301,7 +302,6 @@ void Playback::stopPlayback(bool drain)
         m_CurrentPts = 0.0;
         m_Stop = true;
 
-        std::lock_guard<std::mutex> lock(m_PlaybackMutex);
         m_pAudioRenderer->stop(drain);
         setPlaybackState(PlaybackState::Stopped);
         m_SeekOccured = false;
