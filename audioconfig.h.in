@@ -1,5 +1,5 @@
-#ifndef UTILS_CONFIG_H
-#define UTILS_CONFIG_H
+#ifndef AUDIO_CONFIG_H
+#define AUDIO_CONFIG_H
 
 #cmakedefine HAVE_OPENAL 1
 #cmakedefine HAVE_ALSA 1
@@ -7,4 +7,5 @@
 #cmakedefine HAVE_MAD 1
 #cmakedefine HAVE_FLAC 1
 #cmakedefine HAVE_FFMPEG 1
+#cmakedefine HAVE_TAGLIB 1
 #endif

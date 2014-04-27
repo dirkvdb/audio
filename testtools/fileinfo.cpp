@@ -5,7 +5,11 @@
 #include "utils/fileoperations.h"
 #include "utils/filereader.h"
 #include "utils/bufferedreader.h"
+
+#include "audioconfig.h"
+#ifdef HAVE_TAGLIB
 #include "audio/audiometadata.h"
+#endif
 #include "audio/audiompegutils.h"
 
 using namespace std;
@@ -22,6 +26,7 @@ int main(int argc, char** argv)
             return -1;
         }
         
+#ifdef HAVE_TAGLIB
         Metadata meta(argv[1], Metadata::ReadAudioProperties::Yes);
         log::info("Artist: %s", meta.getArtist());
         log::info("Title: %s", meta.getTitle());
@@ -36,6 +41,7 @@ int main(int argc, char** argv)
         {
             log::warn("No album art found");
         }
+#endif
         
         BufferedReader reader(std::unique_ptr<FileReader>(new FileReader()), 512);
         reader.open(argv[1]);
