@@ -65,7 +65,7 @@ void FFmpegDecoder::destroy()
     
     if (m_pAudioFrame)
     {
-        avcodec_free_frame(&m_pAudioFrame);
+        av_frame_free(&m_pAudioFrame);
     }
 
     if (m_pAudioCodecContext)
@@ -161,7 +161,7 @@ void FFmpegDecoder::initializeAudio()
         throw logic_error("Could not open audio codec for " + m_Filepath);
     }
     
-    m_pAudioFrame = avcodec_alloc_frame();
+    m_pAudioFrame = av_frame_alloc();
 
     Format format = getAudioFormat();
     m_BytesPerFrame = format.framesPerPacket * (format.bits / 8) * format.numChannels;
