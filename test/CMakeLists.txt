@@ -27,5 +27,5 @@ TARGET_LINK_LIBRARIES(audiotest
     ${AUDIO_LIBRARIES}
 )
 
-ADD_TEST(AudioTests audiotest)
+ADD_TEST(NAME AudioTests COMMAND audiotest)
 ADD_DEPENDENCIES(check audiotest)
