@@ -261,7 +261,7 @@ bool FFmpegDecoder::decodeAudioFrame(Frame& frame)
     
         while (gotFrame == 0)
         {
-            avcodec_get_frame_defaults(m_pAudioFrame);
+            av_frame_unref(m_pAudioFrame);
         
             
             int32_t bytesDecoded = avcodec_decode_audio4(m_pAudioStream->codec, m_pAudioFrame, &gotFrame, &packet);
