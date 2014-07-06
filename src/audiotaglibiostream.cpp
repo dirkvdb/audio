@@ -26,7 +26,14 @@ namespace audio
 {
 
 TaglibIOStream::TaglibIOStream(const std::string& url)
-: m_Reader(utils::ReaderFactory::createBuffered(url, 1024*128))
+: m_Reader(utils::ReaderFactory::create(url))
+, m_Uri(url)
+{
+    m_Reader->open(url);
+}
+
+TaglibIOStream::TaglibIOStream(const std::string& url, uint32_t bufferSize)
+: m_Reader(utils::ReaderFactory::createBuffered(url, bufferSize))
 , m_Uri(url)
 {
     m_Reader->open(url);

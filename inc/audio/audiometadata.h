@@ -36,6 +36,8 @@ class TaglibIOStream;
 class Metadata
 {
 public:
+    Metadata(Metadata&&) = default;
+
     enum class ImageFormat
     {
         Png,

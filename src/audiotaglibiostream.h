@@ -31,7 +31,10 @@ namespace audio
 class TaglibIOStream : public TagLib::IOStream
 {
 public:
+    // Creates a stream without bufferred io
     TaglibIOStream(const std::string& url);
+    // Creates a stream with bufferred io
+    TaglibIOStream(const std::string& url, uint32_t bufferSize);
     virtual ~TaglibIOStream();
     
     virtual TagLib::FileName name() const;
