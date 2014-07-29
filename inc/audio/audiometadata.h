@@ -33,25 +33,25 @@ namespace audio
 
 class TaglibIOStream;
 
+enum class ImageFormat
+{
+    Png,
+    Jpeg,
+    Bitmap,
+    Gif,
+    Unknown
+};
+
+struct AlbumArt
+{
+    ImageFormat             format;
+    std::vector<uint8_t>    data;
+};
+
 class Metadata
 {
 public:
     Metadata(Metadata&&) = default;
-
-    enum class ImageFormat
-    {
-        Png,
-        Jpeg,
-        Bitmap,
-        Gif,
-        Unknown
-    };
-    
-    struct AlbumArt
-    {
-        ImageFormat             format;
-        std::vector<uint8_t>    data;
-    };
     
     enum class ReadAudioProperties
     {

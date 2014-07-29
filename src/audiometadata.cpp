@@ -213,29 +213,29 @@ uint32_t Metadata::getDuration()
     return m_TagFile->audioProperties() ? m_TagFile->audioProperties()->length() : 0;
 }
 
-static Metadata::ImageFormat imageFormatFromMimetype(const std::string& mimetype)
+static ImageFormat imageFormatFromMimetype(const std::string& mimetype)
 {
-    if (mimetype == "image/png")    return Metadata::ImageFormat::Png;
-    if (mimetype == "image/jpeg")   return Metadata::ImageFormat::Jpeg;
-    if (mimetype == "image/bmp")    return Metadata::ImageFormat::Bitmap;
-    if (mimetype == "image/gif")    return Metadata::ImageFormat::Gif;
+    if (mimetype == "image/png")    return ImageFormat::Png;
+    if (mimetype == "image/jpeg")   return ImageFormat::Jpeg;
+    if (mimetype == "image/bmp")    return ImageFormat::Bitmap;
+    if (mimetype == "image/gif")    return ImageFormat::Gif;
     
-    return Metadata::ImageFormat::Unknown;
+    return ImageFormat::Unknown;
 }
 
-static Metadata::ImageFormat imageFormatFromMp4Format(MP4::CoverArt::Format format)
+static ImageFormat imageFormatFromMp4Format(MP4::CoverArt::Format format)
 {
     switch (format)
     {
-    case MP4::CoverArt::PNG:    return Metadata::ImageFormat::Png;
-    case MP4::CoverArt::JPEG:   return Metadata::ImageFormat::Jpeg;
-    case MP4::CoverArt::BMP:    return Metadata::ImageFormat::Bitmap;
-    case MP4::CoverArt::GIF:    return Metadata::ImageFormat::Gif;
-    default:                    return Metadata::ImageFormat::Unknown;
+    case MP4::CoverArt::PNG:    return ImageFormat::Png;
+    case MP4::CoverArt::JPEG:   return ImageFormat::Jpeg;
+    case MP4::CoverArt::BMP:    return ImageFormat::Bitmap;
+    case MP4::CoverArt::GIF:    return ImageFormat::Gif;
+    default:                    return ImageFormat::Unknown;
     }
 }
 
-Metadata::AlbumArt Metadata::getAlbumArt()
+AlbumArt Metadata::getAlbumArt()
 {
     AlbumArt art;
 
