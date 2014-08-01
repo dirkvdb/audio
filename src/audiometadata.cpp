@@ -96,6 +96,14 @@ std::string Metadata::getAlbumArtist()
             }
         }
     }
+    else if (TagLib::MP4::File* pMp4File = dynamic_cast<TagLib::MP4::File*>(m_TagFile.get()))
+    {
+        auto&items = pMp4File->tag()->itemListMap();
+        if (items.contains("aART"))
+        {
+            return stringops::trim(items["aART"].toStringList().front().to8Bit(true));
+        }
+    }
     
     return "";
 }
@@ -133,11 +141,19 @@ std::string Metadata::getComposer()
     {
         if (pFlacFile->xiphComment())
         {
-            const TagLib::Ogg::FieldListMap& listMap = pFlacFile->xiphComment()->fieldListMap();
+            auto& listMap = pFlacFile->xiphComment()->fieldListMap();
             if (!listMap["COMPOSER"].isEmpty())
             {
                 return stringops::trim(listMap["COMPOSER"].front().to8Bit(true));
             }
+        }
+    }
+    else if (TagLib::MP4::File* pMp4File = dynamic_cast<TagLib::MP4::File*>(m_TagFile.get()))
+    {
+        auto&items = pMp4File->tag()->itemListMap();
+        if (items.contains("@wrt"))
+        {
+            return stringops::trim(items["aART"].toStringList().front().to8Bit(true));
         }
     }
     
