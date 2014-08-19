@@ -62,7 +62,7 @@ namespace audio
 static std::shared_ptr<TagLib::File> createFile(TagLib::IOStream& iostream, Metadata::ReadAudioProperties props, AudioProperties::ReadStyle audioPropertiesStyle);
 
 Metadata::Metadata(const std::string& uri, ReadAudioProperties props)
-: m_IoStream(new TaglibIOStream(uri))
+: m_IoStream(std::make_shared<TaglibIOStream>(uri))
 , m_TagFile(createFile(*m_IoStream, props, AudioProperties::Fast))
 {
     throwIfNotValid();

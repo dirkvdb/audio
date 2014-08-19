@@ -43,7 +43,7 @@ int main(int argc, char** argv)
         }
 #endif
         
-        BufferedReader reader(std::unique_ptr<FileReader>(new FileReader()), 512);
+        BufferedReader reader(std::make_unique<FileReader>(), 512);
         reader.open(argv[1]);
         
         uint64_t filesize = reader.getContentLength();
