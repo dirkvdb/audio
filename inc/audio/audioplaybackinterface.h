@@ -67,11 +67,11 @@ public:
     virtual std::shared_ptr<ITrack> getTrack() const = 0;
     virtual std::set<PlaybackAction> getAvailableActions() const = 0;
     
-    utils::Signal<void(PlaybackState)>              PlaybackStateChanged;
-    utils::Signal<void(std::set<PlaybackAction>)>   AvailableActionsChanged;
-    utils::Signal<void(double)>                     ProgressChanged;
-    utils::Signal<void(int32_t)>                    VolumeChanged;
-    utils::Signal<void(std::shared_ptr<ITrack>)>    NewTrackStarted;
+    utils::Signal<PlaybackState>              PlaybackStateChanged;
+    utils::Signal<std::set<PlaybackAction>>   AvailableActionsChanged;
+    utils::Signal<double>                     ProgressChanged;
+    utils::Signal<int32_t>                    VolumeChanged;
+    utils::Signal<std::shared_ptr<ITrack>>    NewTrackStarted;
 };
 
 }

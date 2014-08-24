@@ -51,7 +51,7 @@ public:
 
     virtual double getCurrentPts() = 0;
     
-    utils::Signal<void(int32_t)>    VolumeChanged;
+    utils::Signal<int32_t>    VolumeChanged;
 };
 
 }
