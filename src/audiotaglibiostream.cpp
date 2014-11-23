@@ -107,12 +107,12 @@ void TaglibIOStream::clear()
 
 long TaglibIOStream::tell() const
 {
-    return m_Reader->currentPosition();
+    return static_cast<long>(m_Reader->currentPosition());
 }
 
 long TaglibIOStream::length()
 {
-    return m_Reader->getContentLength();
+    return static_cast<long>(m_Reader->getContentLength());
 }
 
 void TaglibIOStream::truncate(long length)
