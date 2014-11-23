@@ -57,8 +57,10 @@ IDecoder* DecoderFactory::create(const std::string& filepath)
     }
     else if (extension == "flac")
     {
-#ifdef HAVE_FLAC
+#if defined(HAVE_FLAC)
         return new FlacDecoder(filepath);
+#elif defined(HAVE_FFMPEG)
+        return new FFmpegDecoder(filepath);
 #else
         throw std::logic_error("Flac support not enabled");
 #endif
