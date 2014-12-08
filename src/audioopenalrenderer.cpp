@@ -156,7 +156,7 @@ void OpenALRenderer::queueFrame(const Frame& frame)
     ALenum err = alGetError();
     if (err != AL_NO_ERROR)
     {
-        log::warn("Openal queueFrame error %d", err);
+        log::warn("Openal queueFrame error {}", err);
     }
 }
 
@@ -174,7 +174,7 @@ void OpenALRenderer::flushBuffers()
         ALenum err = alGetError();
         if (err != AL_NO_ERROR)
         {
-            log::warn("Openal flushBuffers error %d", err);
+            log::warn("Openal flushBuffers error {}", err);
         }
     }
 }

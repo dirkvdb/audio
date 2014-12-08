@@ -22,14 +22,14 @@ int main(int argc, char** argv)
     {
         if (argc != 2)
         {
-            log::error("Usage: %s filename", argv[0]);
+            log::error("Usage: {} filename", argv[0]);
             return -1;
         }
         
 #ifdef HAVE_TAGLIB
         Metadata meta(argv[1], Metadata::ReadAudioProperties::Yes);
-        log::info("Artist: %s", meta.getArtist());
-        log::info("Title: %s", meta.getTitle());
+        log::info("Artist: {}", meta.getArtist());
+        log::info("Title: {}", meta.getTitle());
         
         auto data = meta.getAlbumArt();
         if (!data.data.empty())
@@ -51,7 +51,7 @@ int main(int argc, char** argv)
         MpegUtils::MpegHeader mpegHeader;
         
         uint32_t id3Size = MpegUtils::skipId3Tag(reader);
-        log::info("Id3 size: %d", id3Size);
+        log::info("Id3 size: {}", id3Size);
 
         uint32_t xingPos;
         if (MpegUtils::readMpegHeader(reader, mpegHeader, xingPos) == 0)
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
             log::info("Mpeg Version unknown");
         }
 
-        log::info("Layer %d", mpegHeader.layer);
+        log::info("Layer {}", mpegHeader.layer);
 
         switch (mpegHeader.channelMode)
         {
@@ -108,26 +108,26 @@ int main(int argc, char** argv)
         reader.seekAbsolute(id3Size + xingPos);
         if (MpegUtils::readXingHeader(reader, xingHeader) == 0)
         {
-            log::info("Bitrate: %d", mpegHeader.bitRate);
-            log::info("Samplerate: %d", mpegHeader.sampleRate);
-            log::info("Samples per frame: %d", mpegHeader.samplesPerFrame);
-            log::info("Duration: %f", static_cast<float>((filesize - id3Size) / (mpegHeader.bitRate * 125)));
+            log::info("Bitrate: {}", mpegHeader.bitRate);
+            log::info("Samplerate: {}", mpegHeader.sampleRate);
+            log::info("Samples per frame: {}", mpegHeader.samplesPerFrame);
+            log::info("Duration: {}", static_cast<float>((filesize - id3Size) / (mpegHeader.bitRate * 125)));
 
             log::info("No xing header found");
             return 0;
         }
 
-        log::info("Bitrate: %d %s", mpegHeader.bitRate, xingHeader.vbr ? "VBR" : "CBR");
-        log::info("Samplerate: %d", mpegHeader.sampleRate);
-        log::info("Samples per frame: %d", mpegHeader.samplesPerFrame);
+        log::info("Bitrate: {} {}", mpegHeader.bitRate, xingHeader.vbr ? "VBR" : "CBR");
+        log::info("Samplerate: {}", mpegHeader.sampleRate);
+        log::info("Samples per frame: {}", mpegHeader.samplesPerFrame);
 
         if (xingHeader.numFrames > 0)
         {
-            log::info("Duration: %d", (xingHeader.numFrames * mpegHeader.samplesPerFrame) / mpegHeader.sampleRate);
+            log::info("Duration: {}", (xingHeader.numFrames * mpegHeader.samplesPerFrame) / mpegHeader.sampleRate);
         }
         else
         {
-            log::info("Duration: %d", (filesize - id3Size) / (mpegHeader.bitRate * 125));
+            log::info("Duration: {}", (filesize - id3Size) / (mpegHeader.bitRate * 125));
         }
         
         MpegUtils::LameHeader lameHeader;
@@ -139,9 +139,9 @@ int main(int argc, char** argv)
 
         log::info("Lame header");
         log::info("-----------");
-        log::info("Encoderdelay: %d", lameHeader.encoderDelay);
-        log::info("Encoderdelay (decoderdelay added): %d", lameHeader.encoderDelay + 528 + mpegHeader.samplesPerFrame);
-        log::info("Zeropadding: %d", lameHeader.zeroPadding);
+        log::info("Encoderdelay: {}", lameHeader.encoderDelay);
+        log::info("Encoderdelay (decoderdelay added): {}", lameHeader.encoderDelay + 528 + mpegHeader.samplesPerFrame);
+        log::info("Zeropadding: {}", lameHeader.zeroPadding);
     }
     catch (std::exception& e)
     {

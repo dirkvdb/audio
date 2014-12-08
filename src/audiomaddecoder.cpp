@@ -58,8 +58,8 @@ MadDecoder::MadDecoder(const std::string& uri)
         throw logic_error("File is not an mp3 file: " + m_Reader->uri());
     }
 
-    log::debug("Mad Audio format: bits (16) rate (%d) numChannels (%d) bitrate (%d)", m_MpegHeader.sampleRate, m_MpegHeader.numChannels, m_MpegHeader.bitRate);
-    log::debug("Encoderdelay: %d ZeroPadding: %d", m_LameHeader.encoderDelay, m_LameHeader.zeroPadding);
+    log::debug("Mad Audio format: bits (16) rate ({}) numChannels ({}) bitrate ({})", m_MpegHeader.sampleRate, m_MpegHeader.numChannels, m_MpegHeader.bitRate);
+    log::debug("Encoderdelay: {} ZeroPadding: {}", m_LameHeader.encoderDelay, m_LameHeader.zeroPadding);
 
     m_Reader->seekAbsolute(m_Id3Size);
 
@@ -274,7 +274,7 @@ bool MadDecoder::decodeAudioFrame(Frame& frame, bool processSamples)
         if (MAD_RECOVERABLE(m_MadStream.error))
         {
             if (processSamples)
-                log::warn("Decode error, but recoverable: %s", mad_stream_errorstr(&m_MadStream));
+                log::warn("Decode error, but recoverable: {}", mad_stream_errorstr(&m_MadStream));
         }
         else
         {        
@@ -289,7 +289,7 @@ bool MadDecoder::decodeAudioFrame(Frame& frame, bool processSamples)
             }
             else
             {
-                log::error("Decoder error, unrecoverable: %s", mad_stream_errorstr(&m_MadStream));
+                log::error("Decoder error, unrecoverable: {}", mad_stream_errorstr(&m_MadStream));
                 return false;
             }
         }
@@ -379,7 +379,7 @@ bool MadDecoder::readHeaders(utils::IReader& reader)
     uint32_t xingPos;
     if (MpegUtils::readMpegHeader(reader, m_MpegHeader, xingPos) == 0)
     {
-        log::debug("No mpeg header found, offset = %d", m_Id3Size);
+        log::debug("No mpeg header found, offset = {}", m_Id3Size);
         //try a bruteforce scan in the first meg to be really sure
         if (MpegUtils::searchMpegHeader(reader, m_MpegHeader, m_Id3Size, xingPos) == 0)
         {

@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     {
         if (argc != 2)
         {
-            log::error("Usage: %s filename", argv[0]);
+            log::error("Usage: {} filename", argv[0]);
             return -1;
         }
         
