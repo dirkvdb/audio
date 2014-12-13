@@ -123,7 +123,7 @@ bool Playback::startNewTrack()
         }
     }
 
-    uint32_t duration = static_cast<uint32_t>(m_pAudioDecoder->getDuration());
+    auto duration = static_cast<uint32_t>(m_pAudioDecoder->getDuration());
     if (duration != 0)
     {
         m_Duration = duration;
@@ -297,7 +297,7 @@ void Playback::stop()
 
 void Playback::stopPlayback(bool drain)
 {
-    if (m_pAudioRenderer)
+    if (m_pAudioRenderer && m_State != PlaybackState::Stopped)
     {
         m_CurrentPts = 0.0;
         m_Stop = true;

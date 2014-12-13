@@ -2,6 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 ENABLE_TESTING()
 
 OPTION(STANDALONE "Not used as a submodule of another project" OFF)
+OPTION(TESTTOOLS "Build tools for testing" OFF)
 
 ADD_DEFINITIONS("-D__STDC_CONSTANT_MACROS")
 
@@ -18,12 +19,12 @@ PKG_CHECK_MODULES(TAGLIB_PKG taglib)
 FIND_PACKAGE(ALSA)
 IF (ALSA_FOUND)
     OPTION(HAVE_ALSA "Alsa audio output support" ON)
-ENDIF (ALSA_FOUND)
+ENDIF ()
 
 FIND_PACKAGE(OpenAL)
 IF (OPENAL_FOUND)
     OPTION(HAVE_OPENAL "OpenAL audio output support" ON)
-ENDIF (OPENAL_FOUND)
+ENDIF ()
 
 IF (PULSEAUDIO_PKG_FOUND)
     OPTION(HAVE_PULSE "Pulse audio output support" ON)
@@ -37,7 +38,7 @@ IF (PULSEAUDIO_PKG_FOUND)
         NAMES ${PULSEAUDIO_PKG_LIBRARIES}
         PATHS ${PULSEAUDIO_PKG_LIBRARY_DIRS}
     )
-ENDIF (PULSEAUDIO_PKG_FOUND)
+ENDIF ()
 
 IF (AVCODEC_PKG_FOUND AND AVFORMAT_PKG_FOUND AND AVUTIL_PKG_FOUND)
     OPTION(HAVE_FFMPEG "FFmpeg audio decoder support" ON)
@@ -101,7 +102,7 @@ IF (FLACCPP_PKG_FOUND)
     
     SET(FLAC_INCLUDE_DIRS ${FLAC_INCLUDE_DIR} ${FLACCPP_INCLUDE_DIR})
     SET(FLAC_LIBRARIES ${FLAC_LIBRARY} ${FLACCPP_LIBRARY})
-ENDIF (FLACCPP_PKG_FOUND)
+ENDIF ()
 
 IF (MAD_PKG_FOUND)
     OPTION(HAVE_MAD "Mad mp3 audio decoder support" ON)
@@ -115,7 +116,7 @@ IF (MAD_PKG_FOUND)
         NAMES ${MAD_PKG_LIBRARIES}
         PATHS ${MAD_PKG_LIBRARY_DIRS}
     )
-ENDIF (MAD_PKG_FOUND)
+ENDIF ()
 
 IF (TAGLIB_PKG_FOUND)
     OPTION(HAVE_TAGLIB "Taglib audio metadata support" ON)
@@ -129,7 +130,7 @@ IF (TAGLIB_PKG_FOUND)
         NAMES ${TAGLIB_PKG_LIBRARIES}
         PATHS ${TAGLIB_PKG_LIBRARY_DIRS}
     )
-ENDIF (TAGLIB_PKG_FOUND)
+ENDIF ()
 
 SET (AUDIO_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/inc/"
@@ -160,7 +161,7 @@ SET (AUDIO_LIBRARIES audio
 IF (HAVE_OPENAL)
     LIST(APPEND AUDIO_INCLUDE_DIRS ${OPENAL_INCLUDE_DIR})
     LIST(APPEND AUDIO_LIBRARIES ${OPENAL_LIBRARY})
-ENDIF (HAVE_OPENAL)
+ENDIF ()
 
 SET (AUDIO_SRC_LIST
     src/audiobuffer.h                   src/audiobuffer.h
@@ -183,32 +184,32 @@ SET (AUDIO_SRC_LIST
 
 IF (HAVE_ALSA)
     LIST(APPEND AUDIO_SRC_LIST src/audioalsarenderer.h src/audioalsarenderer.cpp)
-ENDIF (HAVE_ALSA)
+ENDIF ()
 
 IF (HAVE_OPENAL)
     LIST(APPEND AUDIO_SRC_LIST src/audioopenalrenderer.h src/audioopenalrenderer.cpp)
-ENDIF (HAVE_OPENAL)
+ENDIF ()
 
 IF (HAVE_PULSE)
     LIST(APPEND AUDIO_SRC_LIST src/audiopulserenderer.h src/audiopulserenderer.cpp)
-ENDIF (HAVE_PULSE)
+ENDIF ()
 
 IF (HAVE_FFMPEG)
     LIST(APPEND AUDIO_SRC_LIST src/audioffmpegdecoder.h src/audioffmpegdecoder.cpp)
-ENDIF (HAVE_FFMPEG)
+ENDIF ()
 
 IF (HAVE_FLAC)
     LIST(APPEND AUDIO_SRC_LIST src/audioflacdecoder.h src/audioflacdecoder.cpp)
-ENDIF (HAVE_FLAC)
+ENDIF ()
 
 IF (HAVE_MAD)
     LIST(APPEND AUDIO_SRC_LIST src/audiomaddecoder.h src/audiomaddecoder.cpp)
-ENDIF (HAVE_MAD)
+ENDIF ()
 
 IF (HAVE_TAGLIB)
     LIST(APPEND AUDIO_SRC_LIST inc/audio/audiometadata.h src/audiometadata.cpp
                                src/audiotaglibiostream.h src/audiotaglibiostream.cpp)
-ENDIF (HAVE_TAGLIB)
+ENDIF ()
 
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR} ${AUDIO_INCLUDE_DIRS})
 LINK_DIRECTORIES(${AUDIO_LIBRARY_DIRS})
@@ -218,21 +219,23 @@ ADD_LIBRARY(audio STATIC ${AUDIO_SRC_LIST})
 ADD_DEFINITIONS("-std=c++1y")
 IF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     SET(CMAKE_CXX_FLAGS "-stdlib=libc++")
-ENDIF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+ENDIF ()
 
 IF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Gcc")
     SET(CMAKE_CXX_FLAGS_DEBUG "-rdynamic ")
     SET(CMAKE_CXX_FLAGS "-stdlib=libstdc++")
-ENDIF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Gcc")
+ENDIF ()
 
 SET (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall -Wfatal-errors")
 
 IF (UNIX OR APPLE)
     ADD_DEFINITIONS("-DCONSOLE_SUPPORTS_COLOR")
-ENDIF (UNIX OR APPLE)
+ENDIF ()
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/audioconfig.h.in ${CMAKE_BINARY_DIR}/audioconfig.h)
 
-ADD_SUBDIRECTORY(testtools)
+IF (TESTTOOLS)
+    ADD_SUBDIRECTORY(testtools)
+ENDIF ()
 
 ADD_SUBDIRECTORY(test)
