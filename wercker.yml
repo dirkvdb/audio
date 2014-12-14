@@ -17,7 +17,7 @@ build:
                 sudo apt-get install libxdg-basedir-dev libflac++-dev libmad0-dev libpulse-dev libopenal-dev libasound2-dev libtag-dev
 
         - script:
-            name: Compile Image
+            name: Compile Audio
             code: |
                 mkdir -p "${BUILD_DIR}"
                 cd "${SRC_DIR}"
