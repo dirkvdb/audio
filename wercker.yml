@@ -14,7 +14,7 @@ build:
             name: Install dependencies
             code: |
                 sudo apt-get update
-                sudo apt-get install libxdg-basedir-dev libflac++-dev libmad0-dev libpulse-dev libopenal-dev libasound2-dev libtag-dev
+                sudo apt-get install libxdg-basedir-dev libflac++-dev libmad0-dev libpulse-dev libopenal-dev libasound2-dev libtag1-dev
 
         - script:
             name: Compile Audio
