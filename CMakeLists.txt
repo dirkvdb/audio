@@ -106,7 +106,7 @@ ENDIF ()
 
 IF (MAD_PKG_FOUND)
     OPTION(HAVE_MAD "Mad mp3 audio decoder support" ON)
-    
+
     FIND_PATH(MAD_INCLUDE_DIR
         NAMES mad.h
         PATHS ${MAD_PKG_INCLUDE_DIRS}
@@ -120,6 +120,7 @@ ENDIF ()
 
 IF (TAGLIB_PKG_FOUND)
     OPTION(HAVE_TAGLIB "Taglib audio metadata support" ON)
+    FIND_PACKAGE(ZLIB REQUIRED)
     
     FIND_PATH(TAGLIB_INCLUDE_DIR
         NAMES taglib/taglib.h
@@ -127,7 +128,7 @@ IF (TAGLIB_PKG_FOUND)
     )
 
     FIND_LIBRARY(TAGLIB_LIBRARY
-        NAMES ${TAGLIB_PKG_LIBRARIES}
+        NAMES ${TAGLIB_PKG_LIBRARIES} ${ZLIB_LIBRARIES}
         PATHS ${TAGLIB_PKG_LIBRARY_DIRS}
     )
 ENDIF ()
