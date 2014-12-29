@@ -220,12 +220,12 @@ ADD_LIBRARY(audio STATIC ${AUDIO_SRC_LIST})
 
 ADD_DEFINITIONS("-std=c++1y")
 IF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    SET(CMAKE_CXX_FLAGS "-stdlib=libc++")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 ENDIF ()
 
 IF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Gcc")
     SET(CMAKE_CXX_FLAGS_DEBUG "-rdynamic ")
-    SET(CMAKE_CXX_FLAGS "-stdlib=libstdc++")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
 ENDIF ()
 
 SET (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall -Wfatal-errors")
