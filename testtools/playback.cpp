@@ -74,7 +74,7 @@ int main(int argc, char** argv)
         }
         
         Playlist playlist;
-        std::unique_ptr<IPlayback> playback(PlaybackFactory::create("FFmpeg", "Playback", "OpenAL", "Default", playlist));
+        std::unique_ptr<IPlayback> playback(PlaybackFactory::create("Custom", "Playback", "OpenAL", "Default", playlist));
         playlist.addTrack(argv[1]);
 
         playback->play();
