@@ -8,10 +8,28 @@
 #include "audio/audioplaybackfactory.h"
 #include "audio/audioplaybackinterface.h"
 #include "audio/audioplaylistinterface.h"
+#include "audio/audiotrackinterface.h"
 
 using namespace std;
 using namespace utils;
 using namespace audio;
+
+class Track : public ITrack
+{
+public:
+    Track(const std::string& uri)
+    : m_uri(uri)
+    {
+    }
+
+    std::string getUri() const override
+    {
+        return m_uri;
+    }
+
+private:
+    std::string m_uri;
+};
 
 class Playlist : public IPlaylist
 {
@@ -21,16 +39,16 @@ public:
         m_Tracks.push_back(track);
     }
 
-    virtual bool dequeueNextTrack(std::string& track)
+    std::shared_ptr<ITrack> dequeueNextTrack() override
     {
         if (m_Tracks.empty())
         {
-            return false;
+            return nullptr;
         }
         
-        track = m_Tracks.front();
+        auto track = m_Tracks.front();
         m_Tracks.pop_front();
-        return true;
+        return std::make_shared<Track>(track);
     }
     
     virtual size_t getNumberOfTracks() const
@@ -56,12 +74,9 @@ int main(int argc, char** argv)
         }
         
         Playlist playlist;
-        std::unique_ptr<IPlayback> playback(PlaybackFactory::create("FFmpeg", "OpenAL", "Default", playlist));
+        std::unique_ptr<IPlayback> playback(PlaybackFactory::create("FFmpeg", "Playback", "OpenAL", "Default", playlist));
         playlist.addTrack(argv[1]);
-        //playlist.addTrack("/Users/dirk/How Low.m4a");
-        //playlist.addTrack("/Users/dirk/Jamie.mp3");
-        
-        usleep(10000);
+
         playback->play();
         
         char key;
