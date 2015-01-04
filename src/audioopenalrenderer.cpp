@@ -22,6 +22,7 @@
 #include "utils/log.h"
 
 #include <cassert>
+#include <vector>
 #include <stdexcept>
 
 using namespace std;
