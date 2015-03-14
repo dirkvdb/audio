@@ -17,7 +17,7 @@
 #ifndef AUDIOFORMAT_H
 #define AUDIOFORMAT_H
 
-#include "utils/types.h"
+#include <cinttypes>
 
 namespace audio
 {
@@ -27,7 +27,7 @@ struct Format
     Format()
     : bits(0), rate(0), numChannels(0), framesPerPacket(0), floatingPoint(false)
     {}
-    
+
     bool operator==(const Format& otherFormat) const
     {
         return     (bits            == otherFormat.bits)
