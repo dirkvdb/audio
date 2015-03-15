@@ -17,7 +17,7 @@
 #ifndef AUDIO_FRAME_H
 #define AUDIO_FRAME_H
 
-#include "utils/types.h"
+#include <cinttypes>
 #include <cstddef>
 
 namespace audio

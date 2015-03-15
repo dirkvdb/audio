@@ -17,7 +17,7 @@
 #ifndef AUDIOFORMAT_H
 #define AUDIOFORMAT_H
 
-#include "utils/types.h"
+#include <cinttypes>
 
 namespace audio
 {

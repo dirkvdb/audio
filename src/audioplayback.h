@@ -63,9 +63,9 @@ public:
     int32_t getVolume() const;
     void setMute(bool enabled);
     bool getMute() const;
-    
+
     std::shared_ptr<ITrack> getTrack() const;
-    std::set<PlaybackAction> getAvailableActions() const;   
+    std::set<PlaybackAction> getAvailableActions() const;
 
 private:
     void stopPlayback(bool drain);
@@ -91,7 +91,7 @@ private:
     Frame                                   m_AudioFrame;
     std::set<PlaybackAction>                m_AvailableActions;
     std::shared_ptr<ITrack>                 m_CurrentTrack;
-    
+
     std::condition_variable                 m_PlaybackCondition;
     mutable std::mutex                      m_PlaybackMutex;
     mutable std::recursive_mutex            m_DecodeMutex;

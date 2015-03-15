@@ -22,11 +22,11 @@
 #include <memory>
 
 #include <cassert>
+#include <cinttypes>
 
 #include "audio/audiodecoder.h"
 #include "audio/audioformat.h"
 
-#include "utils/types.h"
 #include "utils/readerinterface.h"
 
 #include <FLAC++/decoder.h>

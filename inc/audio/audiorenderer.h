@@ -17,7 +17,8 @@
 #ifndef AUDIORENDERER_H
 #define AUDIORENDERER_H
 
-#include "utils/types.h"
+#include <cinttypes>
+
 #include "utils/signal.h"
 
 namespace audio
@@ -50,7 +51,7 @@ public:
     virtual void queueFrame(const Frame& frame) = 0;
 
     virtual double getCurrentPts() = 0;
-    
+
     utils::Signal<int32_t>    VolumeChanged;
 };
 

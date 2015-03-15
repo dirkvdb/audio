@@ -24,7 +24,7 @@ class ITrack
 {
 public:
     virtual ~ITrack() {}
-    
+
     virtual std::string getUri() const = 0;
 };
 
