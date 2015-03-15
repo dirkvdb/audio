@@ -21,6 +21,10 @@
 #include "utils/numericoperations.h"
 #include "utils/log.h"
 
+#ifdef HAVE_FFMPEG
+#include "audioresampler.h"
+#endif
+
 #include <cassert>
 #include <vector>
 #include <stdexcept>
@@ -53,7 +57,7 @@ OpenALRenderer::OpenALRenderer()
     ALenum err = alGetError();
     if (err != AL_NO_ERROR)
     {
-        log::warn("Openal creation error $d", err);
+        log::warn("Openal creation error {}", err);
     }
     
     alGenBuffers(NUM_BUFFERS, m_AudioBuffers);
@@ -77,6 +81,12 @@ OpenALRenderer::~OpenALRenderer()
 void OpenALRenderer::setFormat(const Format& format)
 {
     m_FloatingPoint = false;
+    m_Frequency = format.rate;
+    m_SampleSize = format.bits / 8;
+
+#ifdef HAVE_FFMPEG
+    m_resampler.reset();
+#endif
     
     switch (format.bits)
     {
@@ -86,21 +96,29 @@ void OpenALRenderer::setFormat(const Format& format)
     case 16:
         m_AudioFormat = format.numChannels == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
         break;
+#ifdef HAVE_FFMPEG
+    case 24:
     case 32:
         if (format.floatingPoint == false)
         {
-            throw logic_error("OpenAlRenderer: unsupported format");
+            m_AudioFormat = format.numChannels == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
+            auto destFormat = format;
+            destFormat.bits = 16;
+            m_resampler = std::make_unique<Resampler>(format, destFormat);
         }
-        // we will do the conversion ourselves
-        m_AudioFormat = format.numChannels == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
-        m_FloatingPoint = true;
+        else
+        {
+            m_AudioFormat = format.numChannels == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
+            m_FloatingPoint = true;
+        }
+        m_SampleSize = 16 / 8;
         break;
+#endif
     default:
-        throw logic_error("OpenAlRenderer: unsupported format");
+        throw logic_error(fmt::format("OpenAlRenderer: unsupported format bitdepth ({})", format.bits));
     }
 
-    m_Frequency = format.rate;
-    m_SampleSize = format.bits / 8;
+
 }
 
 bool OpenALRenderer::hasBufferSpace(uint32_t dataSize)
@@ -127,6 +145,14 @@ double OpenALRenderer::getBufferDuration()
 
 void OpenALRenderer::queueFrame(const Frame& frame)
 {
+#ifdef HAVE_FFMPEG
+    if (m_resampler)
+    {
+        auto frameData = m_resampler->resample(frame.getFrameData(), frame.getDataSize());
+        alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frameData.data(), static_cast<ALsizei>(frameData.size()), m_Frequency);
+    }
+    else
+#endif
     if (m_FloatingPoint)
     {
         std::vector<int16_t> frameData;
@@ -139,7 +165,7 @@ void OpenALRenderer::queueFrame(const Frame& frame)
             frameData[i] = static_cast<int16_t>(sample * 32768.f);
         }
         
-        alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frameData.data(), static_cast<ALsizei>(frameData.size() * 2), m_Frequency);
+        alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frameData.data(), static_cast<ALsizei>(frameData.size() * sizeof(uint16_t)), m_Frequency);
     }
     else
     {

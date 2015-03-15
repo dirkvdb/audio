@@ -14,10 +14,42 @@
 //    along with this program; if not, write to the Free Software
 //    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#ifndef AUDIO_FLAC_HEADERS_H
-#define AUDIO_FLAC_HEADERS_H
+#ifndef AUDIO_RESAMPLER_H
+#define AUDIO_RESAMPLER_H
 
-#pragma GCC system_header
-#include <FLAC++/decoder.h>
+#include <vector>
+#include <cinttypes>
+
+extern "C"
+{
+    #include <libavutil/samplefmt.h>
+    #include <libswresample/swresample.h>
+}
+
+namespace audio
+{
+
+struct Format;
+
+class Resampler
+{
+public:
+    Resampler(const Format& source, const Format& destination);
+
+    std::vector<uint8_t> resample(const uint8_t* pInput, size_t inputSize);
+
+private:
+    SwrContext*     m_pContext;
+    uint8_t**       m_pData;
+    int32_t         m_lineSize;
+    uint32_t        m_sourceBits;
+    uint32_t        m_sourceRate;
+    uint32_t        m_destinationRate;
+    int32_t         m_destinationSampleCount;
+    AVSampleFormat  m_destinationSampleFormat;
+    int64_t         m_destinationChannelCount;
+};
+
+}
 
 #endif

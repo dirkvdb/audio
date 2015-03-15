@@ -34,16 +34,16 @@ namespace audio
 
 AlsaRenderer::AlsaRenderer(const std::string& deviceName)
 : m_pAudioDevice(nullptr)
-, m_BufferSize(0)
-, m_PeriodSize(0)
-, m_BufferTime(1000000) //1 second buffer
-, m_PeriodTime(200000)
-, m_Volume(100)
-, m_Muted(false)
-, m_FrameSize(0)
-, m_LastPts(0.0)
-, m_SupportPause(true)
-, m_Buffer(1024 * 1024)
+, m_bufferSize(0)
+, m_periodSize(0)
+, m_bufferTime(1000000) //1 second buffer
+, m_periodTime(200000)
+, m_volume(100)
+, m_muted(false)
+, m_frameSize(0)
+, m_lastPts(0.0)
+, m_supportPause(true)
+, m_buffer(1024 * 1024)
 {
     throwOnError(snd_pcm_open(&m_pAudioDevice, deviceName.c_str(), SND_PCM_STREAM_PLAYBACK, 0), "Error opening PCM device " + deviceName);
 }
@@ -77,19 +77,19 @@ void AlsaRenderer::setHardwareParams(snd_pcm_format_t format, uint32_t channels,
         throwOnError(-1, "Rate doesn't match");
     }
 
-    throwOnError(snd_pcm_hw_params_set_buffer_time_near(m_pAudioDevice, pHwParams, &m_BufferTime, &dir), "Unable to set buffer time for playback");
-    throwOnError(snd_pcm_hw_params_get_buffer_size(pHwParams, &m_BufferSize), "Unable to get buffer size for playback");
+    throwOnError(snd_pcm_hw_params_set_buffer_time_near(m_pAudioDevice, pHwParams, &m_bufferTime, &dir), "Unable to set buffer time for playback");
+    throwOnError(snd_pcm_hw_params_get_buffer_size(pHwParams, &m_bufferSize), "Unable to get buffer size for playback");
 
-    uint32_t maxPeriodTime = m_BufferTime / 2;
+    uint32_t maxPeriodTime = m_bufferTime / 2;
     throwOnError(snd_pcm_hw_params_set_period_time_max(m_pAudioDevice, pHwParams, &maxPeriodTime, &dir), "Failed to set max period time");
-    throwOnError(snd_pcm_hw_params_set_period_time_near(m_pAudioDevice, pHwParams, &m_PeriodTime, &dir), "Unable to set period time for playback");
-    throwOnError(snd_pcm_hw_params_get_period_size(pHwParams, &m_PeriodSize, &dir), "Unable to get period size for playback");
+    throwOnError(snd_pcm_hw_params_set_period_time_near(m_pAudioDevice, pHwParams, &m_periodTime, &dir), "Unable to set period time for playback");
+    throwOnError(snd_pcm_hw_params_get_period_size(pHwParams, &m_periodSize, &dir), "Unable to get period size for playback");
     throwOnError(snd_pcm_hw_params(m_pAudioDevice, pHwParams), "Unable to set hw params for playback");
 
     if (!snd_pcm_hw_params_can_pause(pHwParams))
     {
         log::warn("Sound card does not support pause");
-        m_SupportPause = false;
+        m_supportPause = false;
     }
 }
 
@@ -102,16 +102,16 @@ void AlsaRenderer::setSoftwareParams()
 
     /* start the transfer when the buffer is almost full: */
     /* (buffer_size / avail_min) * avail_min */
-    throwOnError(snd_pcm_sw_params_set_start_threshold(m_pAudioDevice, pSwParams, (m_BufferSize / m_PeriodSize) * m_PeriodSize), "Unable to set start threshold mode for playback");
+    throwOnError(snd_pcm_sw_params_set_start_threshold(m_pAudioDevice, pSwParams, (m_bufferSize / m_periodSize) * m_periodSize), "Unable to set start threshold mode for playback");
     /* allow the transfer when at least period_size samples can be processed */
-    throwOnError(snd_pcm_sw_params_set_avail_min(m_pAudioDevice, pSwParams, m_PeriodSize), "Unable to set avail min for playback");
+    throwOnError(snd_pcm_sw_params_set_avail_min(m_pAudioDevice, pSwParams, m_periodSize), "Unable to set avail min for playback");
     /* write the parameters to the playback device */
     throwOnError(snd_pcm_sw_params(m_pAudioDevice, pSwParams), "Unable to set sw params for playback");
 }
 
 void AlsaRenderer::setFormat(const Format& format)
 {
-    if (format == m_Format)
+    if (format == m_format)
     {
         log::debug("Format is the same");
         return;
@@ -160,9 +160,9 @@ void AlsaRenderer::setFormat(const Format& format)
     //log::debug("Buffer size:", m_BufferSize, "Period size:", m_PeriodSize);
 
     int bytesPerSample = snd_pcm_format_width(formatType) / 8;
-    m_FrameSize = format.numChannels * bytesPerSample;
+    m_frameSize = format.numChannels * bytesPerSample;
     
-    m_Format = format;
+    m_format = format;
 }
 
 void AlsaRenderer::play()
@@ -223,7 +223,7 @@ void AlsaRenderer::pause()
 {
     if (getDeviceStatus() == SND_PCM_STATE_RUNNING)
     {
-        if (m_SupportPause)
+        if (m_supportPause)
         {
             throwOnError(snd_pcm_pause(m_pAudioDevice, 1), "Error pausing playback");
         }
@@ -236,7 +236,7 @@ void AlsaRenderer::pause()
 
 void AlsaRenderer::resume()
 {
-    if (m_SupportPause)
+    if (m_supportPause)
     {
         if (getDeviceStatus() == SND_PCM_STATE_PAUSED)
         {
@@ -256,8 +256,8 @@ void AlsaRenderer::stop(bool drain)
 {
     if (getDeviceStatus() == SND_PCM_STATE_RUNNING)
     {
-        m_Buffer.clear();
-        m_LastPts = 0.0;
+        m_buffer.clear();
+        m_lastPts = 0.0;
         
         if (drain)
         {
@@ -273,36 +273,36 @@ void AlsaRenderer::stop(bool drain)
 void AlsaRenderer::setVolume(int32_t volume)
 {
     numericops::clip(volume, 0, 100);
-    m_Volume = volume;
+    m_volume = volume;
 }
 
 int32_t AlsaRenderer::getVolume()
 {
-    return m_Volume;
+    return m_volume;
 }
 
 void AlsaRenderer::setMute(bool enabled)
 {
-    if (enabled == m_Muted)
+    if (enabled == m_muted)
     {
         return;
     }
     
-    m_Muted = enabled;
-    if (m_Muted)
+    m_muted = enabled;
+    if (m_muted)
     {
-        m_VolumeAtMute  = m_Volume;
-        m_Volume        = 0;
+        m_volumeAtMute  = m_volume;
+        m_volume        = 0;
     }
     else
     {
-        m_Volume = m_VolumeAtMute;
+        m_volume = m_volumeAtMute;
     }
 }
 
 bool AlsaRenderer::getMute()
 {
-    return m_Muted;
+    return m_muted;
 }
 
 snd_pcm_state_t AlsaRenderer::getDeviceStatus()
@@ -318,17 +318,17 @@ bool AlsaRenderer::hasBufferSpace(uint32_t dataSize)
         return false;
     }
 
-    return m_Buffer.bytesFree() >= static_cast<uint32_t>(dataSize);
+    return m_buffer.bytesFree() >= static_cast<uint32_t>(dataSize);
 }
 
 double AlsaRenderer::getBufferDuration()
 {
     snd_pcm_sframes_t available = snd_pcm_avail_update(m_pAudioDevice);
     uint32_t availableBytes = snd_pcm_frames_to_bytes(m_pAudioDevice, available);
-    uint32_t bufferSize = snd_pcm_frames_to_bytes(m_pAudioDevice, m_BufferSize);
+    uint32_t bufferSize = snd_pcm_frames_to_bytes(m_pAudioDevice, m_bufferSize);
 
     auto bytesInBuffer = bufferSize - availableBytes;
-    return static_cast<double>(bytesInBuffer / (m_Format.bits / 8.0)) / m_Format.rate;
+    return static_cast<double>(bytesInBuffer / (m_format.bits / 8.0)) / m_format.rate;
 }
 
 bool AlsaRenderer::isPlaying()
@@ -351,10 +351,10 @@ void AlsaRenderer::flushBuffers()
     
     //log::debug("Alsa av: %d Buf av: %d (%d - %d)", availableBytes, m_Buffer.bytesUsed(), m_PeriodSize, m_BufferSize);
 
-    if (availableBytes != 0 && m_Buffer.bytesUsed() > availableBytes)
+    if (availableBytes != 0 && m_buffer.bytesUsed() > availableBytes)
     {
         uint32_t size = availableBytes;
-        uint8_t* pData = m_Buffer.getData(size);
+        uint8_t* pData = m_buffer.getData(size);
         
         applyVolume(pData, size);
     
@@ -372,7 +372,7 @@ void AlsaRenderer::flushBuffers()
         {
             if (status == -EPIPE)
             {
-                log::warn("Alsa: Failed to write frame data: underrun occured (%s) %d", snd_strerror(status), m_Buffer.bytesUsed());
+                log::warn("Alsa: Failed to write frame data: underrun occured (%s) %d", snd_strerror(status), m_buffer.bytesUsed());
                 snd_pcm_prepare(m_pAudioDevice);
                 snd_pcm_start(m_pAudioDevice);
             }
@@ -384,7 +384,7 @@ void AlsaRenderer::flushBuffers()
             }
             else if (status == -ESTRPIPE)
             {
-                log::warn("AlsaCallback: Failed to write frame data: suspend event occured %s %d", snd_strerror(status), m_Buffer.bytesUsed());
+                log::warn("AlsaCallback: Failed to write frame data: suspend event occured %s %d", snd_strerror(status), m_buffer.bytesUsed());
             }
             else if (status == -EAGAIN)
             {
@@ -406,27 +406,27 @@ void AlsaRenderer::flushBuffers()
 
 void AlsaRenderer::queueFrame(const Frame& frame)
 {
-    if (m_FrameSize == 0)
+    if (m_frameSize == 0)
     {
         throw logic_error("Alsarenderer: Audio format was never set");
     }
 
-    m_Buffer.writeData(frame.getFrameData(), frame.getDataSize());
-    m_LastPts = frame.getPts();
+    m_buffer.writeData(frame.getFrameData(), frame.getDataSize());
+    m_lastPts = frame.getPts();
 
     flushBuffers();
 }
 
 void AlsaRenderer::applyVolume(uint8_t* pData, uint32_t dataSize)
 {
-    if (m_Volume == 100)
+    if (m_volume == 100)
     {
         return;
     }
 
-    if (m_Format.bits == 16)
+    if (m_format.bits == 16)
     {
-        int scaleFactor = (m_Volume * 256) / 100;
+        int scaleFactor = (m_volume * 256) / 100;
 
         for (uint32_t i = 0; i < dataSize; i+=2)
         {
@@ -436,9 +436,9 @@ void AlsaRenderer::applyVolume(uint8_t* pData, uint32_t dataSize)
             *pSample = sample;
         }
     }
-    else if (m_Format.bits == 32)
+    else if (m_format.bits == 32)
     {
-        float scaleFactor = m_Volume / 100.0;
+        float scaleFactor = m_volume / 100.0;
 
         for (uint32_t i = 0; i < dataSize; i+=4)
         {
@@ -459,12 +459,12 @@ double AlsaRenderer::getCurrentPts()
     snd_pcm_sframes_t frames;
     if (snd_pcm_delay(m_pAudioDevice, &frames) == 0)
     {
-        bufferDelay = static_cast<double>(frames) / m_Format.rate;
+        bufferDelay = static_cast<double>(frames) / m_format.rate;
     }
     
-    bufferDelay += m_Buffer.bytesUsed() / static_cast<double>(m_FrameSize * m_Format.rate);
+    bufferDelay += m_buffer.bytesUsed() / static_cast<double>(m_frameSize * m_format.rate);
 
-    return std::max(0.0, m_LastPts - bufferDelay);
+    return std::max(0.0, m_lastPts - bufferDelay);
 }
 
 void AlsaRenderer::throwOnError(int err, const string& message)

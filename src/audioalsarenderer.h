@@ -63,22 +63,22 @@ private:
     void applyVolume(uint8_t* pData, uint32_t dataSize);
 
     snd_pcm_t*              m_pAudioDevice;
-    snd_pcm_uframes_t       m_BufferSize;
-    snd_pcm_uframes_t       m_PeriodSize;
-    uint32_t                m_BufferTime;
-    uint32_t                m_PeriodTime;
+    snd_pcm_uframes_t       m_bufferSize;
+    snd_pcm_uframes_t       m_periodSize;
+    uint32_t                m_bufferTime;
+    uint32_t                m_periodTime;
 
-    Format                  m_Format;
-    int                     m_Volume;
-    int                     m_VolumeAtMute;
-    bool                    m_Muted;
+    Format                  m_format;
+    int                     m_volume;
+    int                     m_volumeAtMute;
+    bool                    m_muted;
     
-    int                     m_FrameSize;
-    double                  m_LastPts;
+    int                     m_frameSize;
+    double                  m_lastPts;
 
-    bool                    m_SupportPause;
+    bool                    m_supportPause;
 
-    Buffer                  m_Buffer;
+    Buffer                  m_buffer;
 };
 
 }

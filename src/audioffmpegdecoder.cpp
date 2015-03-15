@@ -384,7 +384,7 @@ Format FFmpegDecoder::getAudioFormat()
     format.numChannels      = m_pAudioCodecContext->channels;
     format.framesPerPacket  = m_pAudioCodecContext->frame_size;
     
-    log::debug("Audio format: rate (%d) numChannels (%d)", format.rate, format.numChannels);
+    log::debug("Audio format: rate ({}) numChannels ({})", format.rate, format.numChannels);
 
     return format;
 }

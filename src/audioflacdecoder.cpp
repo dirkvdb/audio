@@ -24,7 +24,6 @@
 #include "utils/log.h"
 #include "utils/readerfactory.h"
 
-using namespace std;
 using namespace utils;
 
 namespace audio
@@ -43,12 +42,12 @@ FlacDecoder::FlacDecoder(const std::string& uri)
     auto initStatus = init();
     if (initStatus != FLAC__STREAM_DECODER_INIT_STATUS_OK)
     {
-        throw logic_error(FLAC__StreamDecoderInitStatusString[initStatus]);
+        throw std::logic_error(FLAC__StreamDecoderInitStatusString[initStatus]);
     }
 
     if (!process_until_end_of_metadata())
     {
-        throw logic_error("Failed to parse flac metadata");
+        throw std::logic_error("Failed to parse flac metadata");
     }
 }
 
@@ -142,7 +141,7 @@ FLAC__StreamDecoderReadStatus FlacDecoder::read_callback(FLAC__byte buffer[], si
     }
     catch (std::exception& e)
     {
-        log::error("Flac decoder read failed: %s", e.what());
+        log::error("Flac decoder read failed: {}", e.what());
         return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
     }
     
@@ -169,7 +168,7 @@ FLAC__StreamDecoderLengthStatus FlacDecoder::length_callback(FLAC__uint64* pStre
     }
     catch (std::exception& e)
     {
-        log::error("Flac decoder get stream length failed: %s", e.what());
+        log::error("Flac decoder get stream length failed: {}", e.what());
         return FLAC__STREAM_DECODER_LENGTH_STATUS_ERROR;
     }
     
@@ -215,18 +214,19 @@ void FlacDecoder::metadata_callback(const FLAC__StreamMetadata* pMetadata)
     assert(pMetadata);
     if (pMetadata->type == FLAC__METADATA_TYPE_STREAMINFO)
     {
-        m_Format.bits           = pMetadata->data.stream_info.bits_per_sample;
-        m_Format.rate           = pMetadata->data.stream_info.sample_rate;
-        m_Format.numChannels    = pMetadata->data.stream_info.channels;
-        m_NumSamples            = pMetadata->data.stream_info.total_samples;
+        m_Format.bits               = pMetadata->data.stream_info.bits_per_sample;
+        m_Format.rate               = pMetadata->data.stream_info.sample_rate;
+        m_Format.numChannels        = pMetadata->data.stream_info.channels;
+        m_Format.framesPerPacket    = pMetadata->data.stream_info.max_framesize;
+        m_NumSamples                = pMetadata->data.stream_info.total_samples;
 
-        log::debug("Flac Audio format: bits (%d) rate (%d) numChannels (%d) %d", m_Format.bits, m_Format.rate, m_Format.numChannels, pMetadata->data.stream_info.max_framesize);
+        log::debug("Flac Audio format: bits ({}) rate ({}) numChannels ({}) {}", m_Format.bits, m_Format.rate, m_Format.numChannels, pMetadata->data.stream_info.max_framesize);
     }
 }
 
 void FlacDecoder::error_callback(FLAC__StreamDecoderErrorStatus status)
 {
-    log::error("FlacDecoder: %s", FLAC__StreamDecoderErrorStatusString[status]);
+    log::error("FlacDecoder: {}", FLAC__StreamDecoderErrorStatusString[status]);
 }
 
 }

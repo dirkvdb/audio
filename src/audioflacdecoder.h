@@ -25,10 +25,11 @@
 
 #include "audio/audiodecoder.h"
 #include "audio/audioformat.h"
-#include "audio/audioflacheaders.h"
 
 #include "utils/types.h"
 #include "utils/readerinterface.h"
+
+#include <FLAC++/decoder.h>
 
 namespace audio
 {

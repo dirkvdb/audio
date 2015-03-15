@@ -22,6 +22,7 @@
 
 #include <deque>
 #include "audio/audiorenderer.h"
+#include "audioconfig.h"
 
 #define NUM_BUFFERS 100
 
@@ -29,6 +30,7 @@ namespace audio
 {
 
 class Frame;
+class Resampler;
 struct Format;
 
 class OpenALRenderer : public IRenderer
@@ -55,20 +57,24 @@ public:
     double getCurrentPts() override;
     
 private:
-    ALCdevice*          m_pAudioDevice;
-    ALCcontext*         m_pAlcContext;
-    ALuint              m_AudioSource;
-    ALuint              m_AudioBuffers[NUM_BUFFERS];
-    int32_t             m_CurrentBuffer;
-    int32_t             m_Volume;
-    bool                m_Muted;
-    bool                m_FloatingPoint;
-    ALenum              m_AudioFormat;
-    ALsizei             m_Frequency;
-    uint32_t            m_FrameSize; //size one queued audio frame
-    uint32_t            m_SampleSize; //size one audio sample
+    ALCdevice*                  m_pAudioDevice;
+    ALCcontext*                 m_pAlcContext;
+    ALuint                      m_AudioSource;
+    ALuint                      m_AudioBuffers[NUM_BUFFERS];
+    int32_t                     m_CurrentBuffer;
+    int32_t                     m_Volume;
+    bool                        m_Muted;
+    bool                        m_FloatingPoint;
+    ALenum                      m_AudioFormat;
+    ALsizei                     m_Frequency;
+    uint32_t                    m_FrameSize; //size one queued audio frame
+    uint32_t                    m_SampleSize; //size one audio sample
 
-    std::deque<double>  m_PtsQueue;
+    std::deque<double>          m_PtsQueue;
+
+#ifdef HAVE_FFMPEG
+    std::unique_ptr<Resampler>  m_resampler;
+#endif
 };
 
 }
