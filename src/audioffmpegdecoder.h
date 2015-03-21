@@ -26,7 +26,7 @@ struct AVPacket;
 struct AVStream;
 
 #include "audio/audiodecoder.h"
-#include "utils/types.h"
+#include <cinttypes>
 
 extern "C"
 {
@@ -51,8 +51,8 @@ public:
 
     Format getAudioFormat();
 
-    double  getProgress();
-    double  getDuration();
+double getProgress();
+    double getDuration();
     size_t getFrameSize();
 
 private:
