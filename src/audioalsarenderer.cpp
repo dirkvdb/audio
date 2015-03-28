@@ -130,13 +130,13 @@ void AlsaRenderer::setFormat(const Format& format)
         switch (format.bits)
         {
         case 32:
-            formatType = SND_PCM_FORMAT_S32_LE;
+            formatType = SND_PCM_FORMAT_S32;
             break;
         case 24:
-            formatType = SND_PCM_FORMAT_S24_LE;
+            formatType = SND_PCM_FORMAT_S24;
             break;
         case 16:
-            formatType = SND_PCM_FORMAT_S16_LE;
+            formatType = SND_PCM_FORMAT_S16;
             break;
         default:
             throw logic_error("AlsaRenderer: unsupported format");
@@ -147,7 +147,7 @@ void AlsaRenderer::setFormat(const Format& format)
         switch (format.bits)
         {
         case 32:
-            formatType = SND_PCM_FORMAT_FLOAT_LE;
+            formatType = SND_PCM_FORMAT_FLOAT;
             break;
         default:
             throw logic_error("AlsaRenderer: unsupported format");
