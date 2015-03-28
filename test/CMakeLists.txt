@@ -16,7 +16,7 @@ ADD_EXECUTABLE(audiotest EXCLUDE_FROM_ALL
 
 TARGET_LINK_LIBRARIES(audiotest
     -lpthread
-    ${UTILS_LIBRARIES}
+    utils
     ${AUDIO_LIBRARIES}
 )
 
