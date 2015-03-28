@@ -67,8 +67,8 @@ void AlsaRenderer::setHardwareParams(snd_pcm_format_t format, uint32_t channels,
     throwOnError(snd_pcm_hw_params_any(m_pAudioDevice, pHwParams), "Broken configuration for playback: no configurations available");
     throwOnError(snd_pcm_hw_params_set_rate_resample(m_pAudioDevice, pHwParams, 1), "Resampling setup failed for playback");
     throwOnError(snd_pcm_hw_params_set_access(m_pAudioDevice, pHwParams, SND_PCM_ACCESS_RW_INTERLEAVED), "Access type not available for playback");
-    throwOnError(snd_pcm_hw_params_set_format(m_pAudioDevice, pHwParams, format), "Sample format not available for playback");
-    throwOnError(snd_pcm_hw_params_set_channels(m_pAudioDevice, pHwParams, channels), "Channels count (%i) not available for playback");
+    throwOnError(snd_pcm_hw_params_set_format(m_pAudioDevice, pHwParams, format), fmt::format("Sample format not available for playback {}", format));
+    throwOnError(snd_pcm_hw_params_set_channels(m_pAudioDevice, pHwParams, channels), "Channel count not available for playback");
 
     uint32_t rrate = rate;
     throwOnError(snd_pcm_hw_params_set_rate_near(m_pAudioDevice, pHwParams, &rrate, 0), "Rate not available for playback");
@@ -123,7 +123,7 @@ void AlsaRenderer::setFormat(const Format& format)
         return;
     }
 
-    log::debug("Format has changed %d %d %d %d %d", format.bits, format.rate, format.numChannels, format.framesPerPacket, format.floatingPoint);
+    log::debug("Format has changed {} {} {} {} {}", format.bits, format.rate, format.numChannels, format.framesPerPacket, format.floatingPoint);
     snd_pcm_format_t formatType;
     if (!format.floatingPoint)
     {
@@ -150,7 +150,7 @@ void AlsaRenderer::setFormat(const Format& format)
             formatType = SND_PCM_FORMAT_FLOAT_LE;
             break;
         default:
-            throw logic_error("AlsaRenderer: unsupported format");   
+            throw logic_error("AlsaRenderer: unsupported format");
         }
     }
 
@@ -161,7 +161,7 @@ void AlsaRenderer::setFormat(const Format& format)
 
     int bytesPerSample = snd_pcm_format_width(formatType) / 8;
     m_FrameSize = format.numChannels * bytesPerSample;
-    
+
     m_Format = format;
 }
 
@@ -258,7 +258,7 @@ void AlsaRenderer::stop(bool drain)
     {
         m_Buffer.clear();
         m_LastPts = 0.0;
-        
+
         if (drain)
         {
             throwOnError(snd_pcm_drain(m_pAudioDevice), "Error stopping playback");
@@ -287,7 +287,7 @@ void AlsaRenderer::setMute(bool enabled)
     {
         return;
     }
-    
+
     m_Muted = enabled;
     if (m_Muted)
     {
@@ -345,19 +345,19 @@ void AlsaRenderer::flushBuffers()
         snd_pcm_prepare(m_pAudioDevice);
         snd_pcm_start(m_pAudioDevice);
     }
-    
+
     snd_pcm_sframes_t available = snd_pcm_avail_update(m_pAudioDevice);
     uint32_t availableBytes = snd_pcm_frames_to_bytes(m_pAudioDevice, available);
-    
+
     //log::debug("Alsa av: %d Buf av: %d (%d - %d)", availableBytes, m_Buffer.bytesUsed(), m_PeriodSize, m_BufferSize);
 
     if (availableBytes != 0 && m_Buffer.bytesUsed() > availableBytes)
     {
         uint32_t size = availableBytes;
         uint8_t* pData = m_Buffer.getData(size);
-        
+
         applyVolume(pData, size);
-    
+
         snd_pcm_sframes_t dataFrames = snd_pcm_bytes_to_frames(m_pAudioDevice, size);
 
         if (size > availableBytes)
@@ -399,7 +399,7 @@ void AlsaRenderer::flushBuffers()
                 log::error("AlsaCallback: unknown error: %s", snd_strerror(status));
             }
         }
-        
+
         flushBuffers();
     }
 }
@@ -461,7 +461,7 @@ double AlsaRenderer::getCurrentPts()
     {
         bufferDelay = static_cast<double>(frames) / m_Format.rate;
     }
-    
+
     bufferDelay += m_Buffer.bytesUsed() / static_cast<double>(m_FrameSize * m_Format.rate);
 
     return std::max(0.0, m_LastPts - bufferDelay);
