@@ -18,6 +18,7 @@
 #define FFMPEG_DECODER_H
 
 #include <string>
+#include <cinttypes>
 
 struct AVFormatContext;
 struct AVCodecContext;
@@ -26,7 +27,6 @@ struct AVPacket;
 struct AVStream;
 
 #include "audio/audiodecoder.h"
-#include <cinttypes>
 
 extern "C"
 {
