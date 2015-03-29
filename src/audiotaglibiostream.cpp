@@ -53,7 +53,7 @@ ByteVector TaglibIOStream::readBlock(ulong readLength)
     ByteVector data;
     data.resize(static_cast<uint>(readLength));
     data.resize(static_cast<uint>(m_Reader->read(reinterpret_cast<uint8_t*>(data.data()), static_cast<uint>(readLength))));
-    
+
     return data;
 }
 
@@ -115,7 +115,7 @@ long TaglibIOStream::length()
     return static_cast<long>(m_Reader->getContentLength());
 }
 
-void TaglibIOStream::truncate(long length)
+void TaglibIOStream::truncate(long /*length*/)
 {
     throw std::logic_error("Truncate is not supported");
 }

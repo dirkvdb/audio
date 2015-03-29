@@ -55,6 +55,7 @@ IRenderer* RendererFactory::create(const std::string& applicationName, const std
 #ifdef HAVE_ALSA
         return new AlsaRenderer(deviceName);
 #else
+        (void) deviceName;
         throw std::logic_error("AudioRendererFactory: package was not compiled with Alsa support");
 #endif
     }
@@ -64,6 +65,7 @@ IRenderer* RendererFactory::create(const std::string& applicationName, const std
 #ifdef HAVE_PULSE
         return new PulseRenderer(applicationName);
 #else
+        (void) applicationName;
         throw std::logic_error("AudioRendererFactory: package was not compiled with PulseAudio support");
 #endif
     }

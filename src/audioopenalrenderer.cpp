@@ -59,7 +59,7 @@ OpenALRenderer::OpenALRenderer()
     {
         log::warn("Openal creation error {}", err);
     }
-    
+
     alGenBuffers(NUM_BUFFERS, m_AudioBuffers);
     alGenSources(1, &m_AudioSource);
 }
@@ -87,7 +87,7 @@ void OpenALRenderer::setFormat(const Format& format)
 #ifdef HAVE_FFMPEG
     m_resampler.reset();
 #endif
-    
+
     switch (format.bits)
     {
     case 8:
@@ -117,11 +117,9 @@ void OpenALRenderer::setFormat(const Format& format)
     default:
         throw logic_error(fmt::format("OpenAlRenderer: unsupported format bitdepth ({})", format.bits));
     }
-
-
 }
 
-bool OpenALRenderer::hasBufferSpace(uint32_t dataSize)
+bool OpenALRenderer::hasBufferSpace(uint32_t /*dataSize*/)
 {
     int queued = 0;
     alGetSourcei(m_AudioSource, AL_BUFFERS_QUEUED, &queued);
@@ -138,7 +136,7 @@ double OpenALRenderer::getBufferDuration()
 {
     int queued = 0;
     alGetSourcei(m_AudioSource, AL_BUFFERS_QUEUED, &queued);
-    
+
     double singleBufferDuration = static_cast<double>(m_FrameSize / static_cast<double>(m_SampleSize)) / m_Frequency;
     return queued * singleBufferDuration;
 }
@@ -157,14 +155,14 @@ void OpenALRenderer::queueFrame(const Frame& frame)
     {
         std::vector<int16_t> frameData;
         frameData.resize(frame.getDataSize() / sizeof(float));
-        
+
         const float* pData = reinterpret_cast<float*>(frame.getFrameData());
         for (auto i = 0u; i < frameData.size(); ++i)
         {
             float sample = numericops::clip(*pData++, -1.f, 1.f);
             frameData[i] = static_cast<int16_t>(sample * 32768.f);
         }
-        
+
         alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frameData.data(), static_cast<ALsizei>(frameData.size() * sizeof(uint16_t)), m_Frequency);
     }
     else
@@ -172,7 +170,7 @@ void OpenALRenderer::queueFrame(const Frame& frame)
         assert(frame.getFrameData());
         alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frame.getFrameData(), static_cast<ALsizei>(frame.getDataSize()), m_Frequency);
     }
-    
+
     alSourceQueueBuffers(m_AudioSource, 1, &m_AudioBuffers[m_CurrentBuffer]);
     m_PtsQueue.push_back(frame.getPts());
     m_FrameSize = static_cast<uint32_t>(frame.getDataSize());
@@ -235,7 +233,7 @@ void OpenALRenderer::resume()
     play();
 }
 
-void OpenALRenderer::stop(bool drain)
+void OpenALRenderer::stop(bool /*drain*/)
 {
     alSourceStop(m_AudioSource);
     flushBuffers();
@@ -245,7 +243,7 @@ void OpenALRenderer::setVolume(int32_t volume)
 {
     numericops::clip(m_Volume, 0, 100);
     m_Volume = volume;
-    
+
     if (!m_Muted)
     {
         alSourcef(m_AudioSource, AL_GAIN, m_Volume / 100.f);
@@ -263,7 +261,7 @@ void OpenALRenderer::setMute(bool enabled)
     {
         return;
     }
-    
+
     m_Muted = enabled;
     alSourcef(m_AudioSource, AL_GAIN, m_Muted ? 0.f : m_Volume / 100.f);
 }

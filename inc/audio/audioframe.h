@@ -46,6 +46,7 @@ public:
 private:
     uint8_t*    m_pFrameData;
     size_t      m_DataSize;
+    bool        m_AllocatedData;
     double      m_Pts;
 };
 

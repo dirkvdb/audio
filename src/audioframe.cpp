@@ -26,13 +26,14 @@ namespace audio
 Frame::Frame()
 : m_pFrameData(nullptr)
 , m_DataSize(0)
+, m_AllocatedData(false)
 , m_Pts(0.0)
 {
 }
 
 Frame::~Frame()
 {
-
+    freeData();
 }
 
 uint8_t* Frame::getFrameData() const
@@ -52,6 +53,7 @@ double Frame::getPts() const
 
 void Frame::setFrameData(uint8_t* data)
 {
+    freeData();
     m_pFrameData = data;
 }
 
@@ -67,6 +69,8 @@ void Frame::setPts(double pts)
 
 void Frame::clear()
 {
+    freeData();
+
     m_pFrameData = nullptr;
     m_DataSize = 0;
     m_Pts = 0.0;
@@ -90,12 +94,17 @@ void Frame::allocateData(size_t size)
 {
     m_pFrameData = new uint8_t[size];
     m_DataSize = size;
+    m_AllocatedData = true;
 }
 
 void Frame::freeData()
 {
-    delete[] m_pFrameData;
-    m_DataSize = 0;
+    if (m_AllocatedData)
+    {
+        delete[] m_pFrameData;
+        m_DataSize = 0;
+        m_AllocatedData = false;
+    }
 } 
 
 }
