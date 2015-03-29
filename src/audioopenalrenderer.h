@@ -21,6 +21,7 @@
 #include <alc.h>
 
 #include <deque>
+#include <memory>
 #include "audio/audiorenderer.h"
 #include "audioconfig.h"
 
@@ -55,7 +56,7 @@ public:
     void flushBuffers() override;
     void queueFrame(const Frame& frame) override;
     double getCurrentPts() override;
-    
+
 private:
     ALCdevice*                  m_pAudioDevice;
     ALCcontext*                 m_pAlcContext;
