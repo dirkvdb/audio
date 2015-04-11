@@ -156,7 +156,7 @@ void OpenALRenderer::queueFrame(const Frame& frame)
         std::vector<int16_t> frameData;
         frameData.resize(frame.getDataSize() / sizeof(float));
 
-        const float* pData = reinterpret_cast<float*>(frame.getFrameData());
+        auto pData = reinterpret_cast<const float*>(frame.getFrameData());
         for (auto i = 0u; i < frameData.size(); ++i)
         {
             float sample = numericops::clip(*pData++, -1.f, 1.f);
@@ -164,16 +164,17 @@ void OpenALRenderer::queueFrame(const Frame& frame)
         }
 
         alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frameData.data(), static_cast<ALsizei>(frameData.size() * sizeof(uint16_t)), m_Frequency);
+        m_FrameSize = static_cast<uint32_t>(frameData.size());
     }
     else
     {
         assert(frame.getFrameData());
         alBufferData(m_AudioBuffers[m_CurrentBuffer], m_AudioFormat, frame.getFrameData(), static_cast<ALsizei>(frame.getDataSize()), m_Frequency);
+        m_FrameSize = static_cast<uint32_t>(frame.getDataSize());
     }
 
     alSourceQueueBuffers(m_AudioSource, 1, &m_AudioBuffers[m_CurrentBuffer]);
     m_PtsQueue.push_back(frame.getPts());
-    m_FrameSize = static_cast<uint32_t>(frame.getDataSize());
 
     ++m_CurrentBuffer;
     m_CurrentBuffer %= NUM_BUFFERS;
