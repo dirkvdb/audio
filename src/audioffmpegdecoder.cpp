@@ -39,6 +39,16 @@ using namespace utils;
 namespace audio
 {
 
+namespace
+{
+    std::string av_make_error_string(int errnum)
+    {
+        char errbuf[AV_ERROR_MAX_STRING_SIZE];
+        av_strerror(errnum, errbuf, AV_ERROR_MAX_STRING_SIZE);
+        return errbuf;
+    }
+}
+
 FFmpegDecoder::FFmpegDecoder(const std::string& filepath)
 : IDecoder(filepath)
 , m_AudioStream(-1)
@@ -97,13 +107,13 @@ void FFmpegDecoder::initialize()
 
     if (ret != 0)
     {
-        throw logic_error(fmt::format("Could not open input file: {} ({})", m_Filepath, std::string(av_err2str(ret))));
+        throw logic_error(fmt::format("Could not open input file: {} ({})", m_Filepath, av_make_error_string(ret)));
     }
 
     ret = avformat_find_stream_info(m_pFormatContext, nullptr);
     if (ret < 0)
     {
-        throw logic_error(fmt::format("Could not find stream information in: {} ({})", m_Filepath, std::string(av_err2str(ret))));
+        throw logic_error(fmt::format("Could not find stream information in: {} ({})", m_Filepath, av_make_error_string(ret)));
     }
 
 #ifdef ENABLE_DEBUG
