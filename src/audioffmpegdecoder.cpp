@@ -62,7 +62,7 @@ FFmpegDecoder::~FFmpegDecoder()
 void FFmpegDecoder::destroy()
 {
     m_BytesPerFrame = 0;
-    
+
     if (m_pAudioFrame)
     {
         av_frame_free(&m_pAudioFrame);
@@ -78,7 +78,7 @@ void FFmpegDecoder::destroy()
     {
         avformat_close_input(&m_pFormatContext);
     }
-    
+
     avformat_network_deinit();
 }
 
@@ -90,17 +90,20 @@ void FFmpegDecoder::initialize()
 
 
 #if LIBAVCODEC_VERSION_MAJOR < 53
-    if (av_open_input_file(&m_pFormatContext, m_Filepath.c_str(), nullptr, 0, nullptr) != 0)
+    auto ret = av_open_input_file(&m_pFormatContext, m_Filepath.c_str(), nullptr, 0, nullptr);
 #else
-    if (avformat_open_input(&m_pFormatContext, m_Filepath.c_str(), nullptr, nullptr) != 0)
+    auto ret = avformat_open_input(&m_pFormatContext, m_Filepath.c_str(), nullptr, nullptr);
 #endif
+
+    if (ret != 0)
     {
-        throw logic_error("Could not open input file: " + m_Filepath);
+        throw logic_error(fmt::format("Could not open input file: {} ({})", m_Filepath, av_err2str(ret)));
     }
 
-    if (avformat_find_stream_info(m_pFormatContext, nullptr) < 0)
+    ret = avformat_find_stream_info(m_pFormatContext, nullptr);
+    if (ret < 0)
     {
-        throw logic_error("Could not find stream information in " + m_Filepath);
+        throw logic_error(fmt::format("Could not find stream information in: {} ({})", m_Filepath, av_err2str(ret)));
     }
 
 #ifdef ENABLE_DEBUG
@@ -160,7 +163,7 @@ void FFmpegDecoder::initializeAudio()
     {
         throw logic_error("Could not open audio codec for " + m_Filepath);
     }
-    
+
     m_pAudioFrame = av_frame_alloc();
 
     Format format = getAudioFormat();
@@ -226,29 +229,29 @@ template <typename T>
 void FFmpegDecoder::mergeAudioPlanes(Frame& frame)
 {
     // audio data is in seperate planes, merge them
-    
+
     uint32_t frameSize = m_pAudioFrame->nb_samples * av_get_bytes_per_sample(m_pAudioCodecContext->sample_fmt) * m_pAudioCodecContext->channels;
-    
+
     frame.allocateData(frameSize);
     frame.setDataSize(frameSize);
-    
+
     T* pData = reinterpret_cast<T*>(frame.getFrameData());
     T* pDataPlane1 = reinterpret_cast<T*>(m_pAudioFrame->data[0]);
     T* pDataPlane2 = reinterpret_cast<T*>(m_pAudioFrame->data[1]);
-    
+
     for (int i = 0; i < m_pAudioFrame->nb_samples; ++i)
     {
         *pData++ = *pDataPlane1++;
         *pData++ = *pDataPlane2++;
     }
-    
+
     m_BytesPerFrame = max(m_BytesPerFrame, static_cast<size_t>(frameSize));
 }
 
 bool FFmpegDecoder::decodeAudioFrame(Frame& frame)
 {
     bool frameDecoded = false;
-    
+
     AVPacket packet;
     if (!readPacket(packet))
     {
@@ -258,12 +261,12 @@ bool FFmpegDecoder::decodeAudioFrame(Frame& frame)
     try
     {
         int32_t gotFrame = 0;
-    
+
         while (gotFrame == 0)
         {
             av_frame_unref(m_pAudioFrame);
-        
-            
+
+
             int32_t bytesDecoded = avcodec_decode_audio4(m_pAudioStream->codec, m_pAudioFrame, &gotFrame, &packet);
             if (bytesDecoded < 0)
             {
@@ -277,7 +280,7 @@ bool FFmpegDecoder::decodeAudioFrame(Frame& frame)
                 {
                     continue;
                 }
-                
+
                 return frameDecoded;
             }
 
@@ -289,9 +292,9 @@ bool FFmpegDecoder::decodeAudioFrame(Frame& frame)
             {
                 m_AudioClock += static_cast<double>(bytesDecoded) / (2 * m_pAudioStream->codec->channels * m_pAudioStream->codec->sample_rate);
             }
-            
+
             auto bytesPerSample = av_get_bytes_per_sample(m_pAudioCodecContext->sample_fmt);
-            
+
             // planar multi channel audio requires merging the audio planes
             if (m_pAudioCodecContext->channels >= 2 && m_pAudioCodecContext->sample_fmt == AV_SAMPLE_FMT_FLTP)
             {
@@ -383,8 +386,8 @@ Format FFmpegDecoder::getAudioFormat()
     format.rate             = m_pAudioCodecContext->sample_rate;
     format.numChannels      = m_pAudioCodecContext->channels;
     format.framesPerPacket  = m_pAudioCodecContext->frame_size;
-    
-    log::debug("Audio format: rate ({}) numChannels ({})", format.rate, format.numChannels);
+
+    log::debug("FFmpeg Audio format: bits ({}) rate ({}) numChannels ({}) float({})", format.bits, format.rate, format.numChannels, format.floatingPoint);
 
     return format;
 }
