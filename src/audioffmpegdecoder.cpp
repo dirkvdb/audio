@@ -94,10 +94,8 @@ void FFmpegDecoder::destroy()
 
 void FFmpegDecoder::initialize()
 {
-    avcodec_register_all();
     av_register_all();
     avformat_network_init();
-
 
 #if LIBAVCODEC_VERSION_MAJOR < 53
     auto ret = av_open_input_file(&m_pFormatContext, m_Filepath.c_str(), nullptr, 0, nullptr);

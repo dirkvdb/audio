@@ -92,6 +92,12 @@ void Frame::offsetDataPtr(size_t offset)
 
 void Frame::allocateData(size_t size)
 {
+    if (m_AllocatedData && m_DataSize == size)
+    {
+        return;
+    }
+    
+    freeData();
     m_pFrameData = new uint8_t[size];
     m_DataSize = size;
     m_AllocatedData = true;
