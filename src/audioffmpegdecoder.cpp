@@ -97,13 +97,13 @@ void FFmpegDecoder::initialize()
 
     if (ret != 0)
     {
-        throw logic_error(fmt::format("Could not open input file: {} ({})", m_Filepath, av_err2str(ret)));
+        throw logic_error(fmt::format("Could not open input file: {} ({})", m_Filepath, std::string(av_err2str(ret))));
     }
 
     ret = avformat_find_stream_info(m_pFormatContext, nullptr);
     if (ret < 0)
     {
-        throw logic_error(fmt::format("Could not find stream information in: {} ({})", m_Filepath, av_err2str(ret)));
+        throw logic_error(fmt::format("Could not find stream information in: {} ({})", m_Filepath, std::string(av_err2str(ret))));
     }
 
 #ifdef ENABLE_DEBUG
