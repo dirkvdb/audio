@@ -21,12 +21,7 @@ build:
             code: |
                 mkdir -p "${BUILD_DIR}"
                 cd "${SRC_DIR}"
-                cd ..
-                git clone https://github.com/dirkvdb/utils.git
-                cd utils
-                git checkout develop
-                git submodule update --init --recursive
-                cd "${BUILD_DIR}"
+                git clone -b --single-branch develop https://github.com/dirkvdb/utils.git --recursive ../utils
                 cmake -DSTANDALONE=1 -DCMAKE_BUILD_TYPE=Release "${SRC_DIR}"
                 make -j8
                 make check -j8
