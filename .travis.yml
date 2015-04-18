@@ -30,7 +30,7 @@ install:
   - cd ..
   - wget http://www.ffmpeg.org/releases/ffmpeg-2.6.2.tar.bz2
   - tar xf ffmpeg-2.6.2.tar.bz2
-  - cd ffmpeg-2.6.2 && ./configure --prefix=/usr --disable-shared --disable-avdevice --disable-doc --disable-htmlpages --disable-manpages --disable-programs --disable-encoders --disable-muxers --disable-decoders --disable-swscale --disable-everything && make && make install
+  - cd ffmpeg-2.6.2 && ./configure --prefix=/usr --disable-shared --disable-avdevice --disable-doc --disable-htmlpages --disable-manpages --disable-programs --disable-encoders --disable-muxers --disable-decoders --disable-swscale --disable-yasm --disable-everything && make && make install
   - cd ..
 
 before_script:
