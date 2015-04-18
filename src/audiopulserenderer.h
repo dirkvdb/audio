@@ -39,25 +39,22 @@ public:
     PulseRenderer(const std::string& name);
     virtual ~PulseRenderer();
 
-    void setFormat(const Format& format);
-    
-    double getCurrentPts();
-    void play();
-    void pause();
-    void resume();
-    void stop(bool drain);
-    void setVolume(int32_t volume);
-    int32_t getVolume();
-    void setMute(bool enabled);
-    bool getMute();
-
-    bool isPlaying();
-
-    bool hasBufferSpace(uint32_t dataSize);
-    double getBufferDuration();
-    
-    void flushBuffers();
-    void queueFrame(const Frame& frame);
+    // IRenderer
+    void setFormat(const Format& format) override;
+    void play() override;
+    void pause() override;
+    void resume() override;
+    void stop(bool drain) override;
+    void setVolume(int32_t volume) override;
+    int32_t getVolume() override;
+    void setMute(bool enabled) override;
+    bool getMute() override;
+    bool isPlaying() override;
+    bool hasBufferSpace(uint32_t dataSize) override;
+    double getBufferDuration() override;
+    void flushBuffers() override;
+    void queueFrame(const Frame& frame) override;
+    double getCurrentPts() override;
 
 private:
     static void contextStateCb(pa_context* pContext, void* pData);
@@ -89,7 +86,7 @@ private:
     pa_usec_t                   m_Latency;
     uint32_t                    m_FrameSize;
     uint32_t                    m_HWBufferSize;
-    
+
     Buffer                      m_Buffer;
 };
 
