@@ -19,9 +19,10 @@ build:
         - script:
             name: Compile Audio
             code: |
-                mkdir -p "${BUILD_DIR}"
                 cd "${SRC_DIR}"
                 git clone -b develop --single-branch --recursive https://github.com/dirkvdb/utils.git ../utils
+                mkdir -p "${BUILD_DIR}"
+                cd "${BUILD_DIR}"
                 cmake -DSTANDALONE=1 -DCMAKE_BUILD_TYPE=Release "${SRC_DIR}"
                 make -j8
                 make check -j8
@@ -30,4 +31,4 @@ build:
             name: Run Tests
             code: |
                 cd "${BUILD_DIR}"
-                make test
+                CTEST_OUTPUT_ON_FAILURE=1 make test
