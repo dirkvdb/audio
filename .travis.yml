@@ -27,6 +27,7 @@ install:
   - cd taglib-1.9.1
   - cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX:PATH=/usr .
   - sudo make -j4 install
+  - cd ..
 
 before_script:
   - git clone -b develop --single-branch --recursive https://github.com/dirkvdb/utils.git ../utils
