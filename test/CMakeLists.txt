@@ -9,7 +9,7 @@ LINK_DIRECTORIES(
     ${AUDIO_LIBRARY_DIRS}
 )
 
-ADD_EXECUTABLE(audiotest EXCLUDE_FROM_ALL
+ADD_EXECUTABLE(audiotest
     gmock-gtest-all.cpp
     main.cpp
 )
@@ -21,4 +21,3 @@ TARGET_LINK_LIBRARIES(audiotest
 )
 
 ADD_TEST(NAME AudioTests COMMAND audiotest)
-ADD_DEPENDENCIES(check audiotest)

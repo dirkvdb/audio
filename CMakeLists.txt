@@ -3,6 +3,7 @@ ENABLE_TESTING()
 
 OPTION(STANDALONE "Not used as a submodule of another project" OFF)
 OPTION(TESTTOOLS "Build tools for testing" OFF)
+OPTION(ENABLE_TESTS "build unit tests" ON)
 
 ADD_DEFINITIONS("-D__STDC_CONSTANT_MACROS")
 
@@ -257,4 +258,6 @@ IF (TESTTOOLS)
     ADD_SUBDIRECTORY(testtools)
 ENDIF ()
 
-ADD_SUBDIRECTORY(test)
+IF (ENABLE_TESTS)
+    ADD_SUBDIRECTORY(test)
+ENDIF ()
