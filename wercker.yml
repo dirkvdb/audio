@@ -25,7 +25,6 @@ build:
                 cd "${BUILD_DIR}"
                 cmake -DSTANDALONE=1 -DCMAKE_BUILD_TYPE=Release "${SRC_DIR}"
                 make -j8
-                make check -j8
 
         - script:
             name: Run Tests
