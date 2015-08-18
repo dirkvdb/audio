@@ -15,11 +15,6 @@ IF (STANDALONE)
     IF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND APPLE)
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     ENDIF ()
-
-    IF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Gcc")
-        SET(CMAKE_CXX_FLAGS_DEBUG "-rdynamic ")
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
-    ENDIF ()
 ENDIF ()
 
 FIND_PACKAGE(PkgConfig)
