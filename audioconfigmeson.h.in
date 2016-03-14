@@ -1,0 +1,12 @@
+#ifndef AUDIO_CONFIG_H
+#define AUDIO_CONFIG_H
+
+#mesondefine HAVE_OPENAL
+#mesondefine HAVE_ALSA
+#mesondefine HAVE_PULSE
+#mesondefine HAVE_MAD
+#mesondefine HAVE_FLAC
+#mesondefine HAVE_FFMPEG
+#mesondefine HAVE_TAGLIB
+
+#endif

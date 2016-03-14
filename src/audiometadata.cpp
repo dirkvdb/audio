@@ -29,29 +29,29 @@
 #include <fstream>
 #include <sstream>
 
-#include <taglib/taglib.h>
-#include <taglib/fileref.h>
-#include <taglib/asffile.h>
-#include <taglib/mpegfile.h>
-#include <taglib/vorbisfile.h>
-#include <taglib/flacfile.h>
-#include <taglib/oggflacfile.h>
-#include <taglib/mpcfile.h>
-#include <taglib/mp4file.h>
-#include <taglib/wavpackfile.h>
-#include <taglib/speexfile.h>
-#include <taglib/trueaudiofile.h>
-#include <taglib/aifffile.h>
-#include <taglib/wavfile.h>
-#include <taglib/apefile.h>
-#include <taglib/modfile.h>
-#include <taglib/flacfile.h>
-#include <taglib/s3mfile.h>
-#include <taglib/itfile.h>
-#include <taglib/xmfile.h>
-#include <taglib/tiostream.h>
-#include <taglib/id3v2framefactory.h>
-#include <taglib/attachedpictureframe.h>
+#include <taglib.h>
+#include <fileref.h>
+#include <asffile.h>
+#include <mpegfile.h>
+#include <vorbisfile.h>
+#include <flacfile.h>
+#include <oggflacfile.h>
+#include <mpcfile.h>
+#include <mp4file.h>
+#include <wavpackfile.h>
+#include <speexfile.h>
+#include <trueaudiofile.h>
+#include <aifffile.h>
+#include <wavfile.h>
+#include <apefile.h>
+#include <modfile.h>
+#include <flacfile.h>
+#include <s3mfile.h>
+#include <itfile.h>
+#include <xmfile.h>
+#include <tiostream.h>
+#include <id3v2framefactory.h>
+#include <attachedpictureframe.h>
 
 using namespace utils;
 using namespace TagLib;

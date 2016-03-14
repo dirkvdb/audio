@@ -17,8 +17,8 @@
 #ifndef AUDIO_HTTP_IO_STREAM
 #define AUDIO_HTTP_IO_STREAM
 
-#include <taglib/taglib.h>
-#include <taglib/tiostream.h>
+#include <taglib.h>
+#include <tiostream.h>
 
 #include <memory>
 #include <string>
