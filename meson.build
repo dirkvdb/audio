@@ -1,8 +1,6 @@
 project('audio', 'cpp', default_options : ['cpp_std=c++14'])
 
-if not meson.is_subproject()
-    utilssub = subproject('utils')
-endif
+utilssub = subproject('utils')
 
 incs = ['inc']
 
