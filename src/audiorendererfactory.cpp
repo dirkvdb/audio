@@ -22,15 +22,15 @@
 #include "winconfig.h"
 #endif
 
-#ifdef HAVE_OPENAL
+#if HAVE_OPENAL
 #include "audioopenalrenderer.h"
 #endif
 
-#ifdef HAVE_ALSA
+#if HAVE_ALSA
 #include "audioalsarenderer.h"
 #endif
 
-#ifdef HAVE_PULSE
+#if HAVE_PULSE
 #include "audiopulserenderer.h"
 #endif
 
@@ -43,7 +43,7 @@ IRenderer* RendererFactory::create(const std::string& applicationName, const std
 {
     if (audioBackend == "OpenAL")
     {
-#ifdef HAVE_OPENAL
+#if HAVE_OPENAL
         return new OpenALRenderer();
 #else
         throw std::logic_error("AudioRendererFactory: package was not compiled with OpenAl support");
@@ -52,7 +52,7 @@ IRenderer* RendererFactory::create(const std::string& applicationName, const std
 
     if (audioBackend == "Alsa")
     {
-#ifdef HAVE_ALSA
+#if HAVE_ALSA
         return new AlsaRenderer(deviceName);
 #else
         (void) deviceName;
@@ -62,7 +62,7 @@ IRenderer* RendererFactory::create(const std::string& applicationName, const std
 
     if (audioBackend == "PulseAudio")
     {
-#ifdef HAVE_PULSE
+#if HAVE_PULSE
         return new PulseRenderer(applicationName);
 #else
         (void) applicationName;
