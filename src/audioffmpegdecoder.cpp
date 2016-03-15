@@ -332,7 +332,7 @@ bool FFmpegDecoder::decodeAudioFrame(Frame& frame)
         log::error(e.what());
     }
 
-    av_free_packet(&packet);
+    av_packet_unref(&packet);
     return frameDecoded;
 }
 
@@ -351,7 +351,7 @@ bool FFmpegDecoder::readPacket(AVPacket& packet)
             }
             else
             {
-                av_free_packet(&packet);
+                av_packet_unref(&packet);
             }
         }
         else
