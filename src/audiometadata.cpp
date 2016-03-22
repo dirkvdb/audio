@@ -104,7 +104,7 @@ std::string Metadata::getAlbumArtist()
             return stringops::trim(items["aART"].toStringList().front().to8Bit(true));
         }
     }
-    
+
     return "";
 }
 
@@ -156,7 +156,7 @@ std::string Metadata::getComposer()
             return stringops::trim(items["aART"].toStringList().front().to8Bit(true));
         }
     }
-    
+
     return "";
 }
 
@@ -235,7 +235,7 @@ static ImageFormat imageFormatFromMimetype(const std::string& mimetype)
     if (mimetype == "image/jpeg")   return ImageFormat::Jpeg;
     if (mimetype == "image/bmp")    return ImageFormat::Bitmap;
     if (mimetype == "image/gif")    return ImageFormat::Gif;
-    
+
     return ImageFormat::Unknown;
 }
 
@@ -302,11 +302,11 @@ AlbumArt Metadata::getAlbumArt()
     {
         auto& coverItem = pMp4File->tag()->itemListMap()["covr"];
         auto coverList = coverItem.toCoverArtList();
-        
+
         if (!coverList.isEmpty())
         {
             auto data = coverList.front().data();
-        
+
             art.data.resize(data.size());
             memcpy(art.data.data(), data.data(), art.data.size());
             art.format = imageFormatFromMp4Format(coverList.front().format());
@@ -333,74 +333,73 @@ void Metadata::throwIfNotValid() const
 static std::shared_ptr<TagLib::File> createFile(TagLib::IOStream& ioStream, Metadata::ReadAudioProperties props, AudioProperties::ReadStyle audioPropertiesStyle)
 {
     bool readAudioProperties = props == Metadata::ReadAudioProperties::Yes;
-    std::string filename = ioStream.name();
     std::string ext = stringops::uppercase(fileops::getFileExtension(ioStream.name()));
 
     if (ext == "MP3")
     {
         return std::make_shared<MPEG::File>(&ioStream, ID3v2::FrameFactory::instance(), readAudioProperties, audioPropertiesStyle);
     }
-    
+
     if (ext == "OGG")
     {
         return std::make_shared<Ogg::Vorbis::File>(&ioStream, readAudioProperties, audioPropertiesStyle);
     }
-    
+
     if (ext == "FLAC")
     {
         return std::make_shared<FLAC::File>(&ioStream, ID3v2::FrameFactory::instance(), readAudioProperties, audioPropertiesStyle);
     }
-    
+
     if (ext == "MPC")
     {
         return std::make_shared<MPC::File>(&ioStream, readAudioProperties, audioPropertiesStyle);
     }
-    
+
     if (ext == "WV")
     {
         return std::make_shared<WavPack::File>(&ioStream, readAudioProperties, audioPropertiesStyle);
     }
-    
+
     if (ext == "SPX")
     {
         return std::make_shared<Ogg::Speex::File>(&ioStream, readAudioProperties, audioPropertiesStyle);
     }
-    
+
     if (ext == "TTA")
     {
         return std::make_shared<TrueAudio::File>(&ioStream, readAudioProperties, audioPropertiesStyle);
     }
-    
+
     if (ext == "WMA" || ext == "ASF")
     {
         return std::make_shared<ASF::File>(&ioStream, readAudioProperties, audioPropertiesStyle);
     }
-    
+
     if (ext == "AIF" || ext == "AIFF")
     {
         return std::make_shared<RIFF::AIFF::File>(&ioStream, readAudioProperties, audioPropertiesStyle);
     }
-    
+
     if (ext == "WAV")
     {
         return std::make_shared<RIFF::WAV::File>(&ioStream, readAudioProperties, audioPropertiesStyle);
     }
-    
+
     if (ext == "APE")
     {
         return std::make_shared<APE::File>(&ioStream, readAudioProperties, audioPropertiesStyle);
     }
-    
+
     if (ext == "S3M")
     {
         return std::make_shared<S3M::File>(&ioStream, readAudioProperties, audioPropertiesStyle);
     }
-    
+
     if (ext == "IT")
     {
         return std::make_shared<IT::File>(&ioStream, readAudioProperties, audioPropertiesStyle);
     }
-    
+
     if (ext == "XM")
     {
         return std::make_shared<XM::File>(&ioStream, readAudioProperties, audioPropertiesStyle);
@@ -410,12 +409,12 @@ static std::shared_ptr<TagLib::File> createFile(TagLib::IOStream& ioStream, Meta
     {
         return std::make_shared<Mod::File>(&ioStream, readAudioProperties, audioPropertiesStyle);
     }
-    
+
     if (ext == "M4A" || ext == "M4R" || ext == "M4B" || ext == "M4P" || ext == "MP4" || ext == "3G2")
     {
         return std::make_shared<MP4::File>(&ioStream, readAudioProperties, audioPropertiesStyle);
     }
-    
+
     if (ext == "OGA")
     {
         // oga can be any audio in the Ogg container. First try FLAC, then Vorbis.
@@ -424,11 +423,11 @@ static std::shared_ptr<TagLib::File> createFile(TagLib::IOStream& ioStream, Meta
         {
             return file;
         }
-        
+
         return std::make_shared<Ogg::Vorbis::File>(&ioStream, readAudioProperties, audioPropertiesStyle);
     }
-    
-    throw  std::logic_error((std::string("Failed to determine file type from url: ") + ioStream.name()).c_str());
+
+    throw  std::logic_error((std::string("Failed to determine file type from url: ") + std::string(ioStream.name())).c_str());
 }
 
 }
