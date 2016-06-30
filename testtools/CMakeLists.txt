@@ -2,7 +2,7 @@ INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR} ${AUDIO_INCLUDE_DIRS})
 LINK_DIRECTORIES(${AUDIO_LIBRARY_DIRS})
 
 ADD_EXECUTABLE(fileinfo fileinfo.cpp)
-TARGET_LINK_LIBRARIES(fileinfo audio utils)
+TARGET_LINK_LIBRARIES(fileinfo audio)
 
 ADD_EXECUTABLE(playback playback.cpp)
-TARGET_LINK_LIBRARIES(playback audio utils)
+TARGET_LINK_LIBRARIES(playback audio)
