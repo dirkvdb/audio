@@ -19,6 +19,7 @@
 
 #include "utils/signal.h"
 #include <set>
+#include <memory>
 
 namespace audio
 {
@@ -66,7 +67,7 @@ public:
 
     virtual std::shared_ptr<ITrack> getTrack() const = 0;
     virtual std::set<PlaybackAction> getAvailableActions() const = 0;
-    
+
     utils::Signal<PlaybackState>              PlaybackStateChanged;
     utils::Signal<std::set<PlaybackAction>>   AvailableActionsChanged;
     utils::Signal<double>                     ProgressChanged;
