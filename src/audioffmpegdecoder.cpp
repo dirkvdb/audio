@@ -80,14 +80,15 @@ void FFmpegDecoder::destroy()
 
     if (m_pAudioCodecContext)
     {
-        avcodec_close(m_pAudioCodecContext);
-        m_pAudioCodecContext = nullptr;
+        avcodec_free_context(&m_pAudioCodecContext);
     }
 
     if (m_pFormatContext)
     {
         avformat_close_input(&m_pFormatContext);
     }
+
+    m_pAudioCodecParameters = nullptr;
 
     avformat_network_deinit();
 }
@@ -132,7 +133,7 @@ void FFmpegDecoder::initializeAudio()
 #if LIBAVCODEC_VERSION_MAJOR < 53
         if (m_pFormatContext->streams[i]->codec->codec_type == CODEC_TYPE_AUDIO)
 #else
-        if (m_pFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+        if (m_pFormatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
 #endif
         {
             m_pAudioStream = m_pFormatContext->streams[i];
@@ -146,15 +147,26 @@ void FFmpegDecoder::initializeAudio()
         throw logic_error("No audiostream found in " + m_Filepath);
     }
 
-    m_pAudioCodecContext = m_pFormatContext->streams[m_AudioStream]->codec;
+    m_pAudioCodecParameters = m_pFormatContext->streams[m_AudioStream]->codecpar;
+
+    auto* codecContext = avcodec_alloc_context3(nullptr);
+    auto ret = avcodec_parameters_to_context(m_pAudioCodecContext, m_pAudioCodecParameters);
+    if (ret < 0)
+    {
+        avcodec_free_context(&codecContext);
+        throw logic_error("Failed to convert coded parameters " + av_make_error_string(ret));
+    }
+
     m_pAudioCodec = avcodec_find_decoder(m_pAudioCodecContext->codec_id);
 
     if (m_pAudioCodec == nullptr)
     {
         // set to nullptr, otherwise avcodec_close(m_pAudioCodecContext) crashes
-        m_pAudioCodecContext = nullptr;
+        avcodec_free_context(&codecContext);
         throw logic_error("Audio Codec not found for " + m_Filepath);
     }
+
+    m_pAudioCodecContext = codecContext;
 
     // currently we disable ac3 surround
     m_pAudioCodecContext->channels = 2;
@@ -225,7 +237,7 @@ void FFmpegDecoder::seek(::int64_t timestamp)
     if (ret >= 0)
     {
         m_AudioClock = static_cast<double>(timestamp) / AV_TIME_BASE;
-        avcodec_flush_buffers(m_pFormatContext->streams[m_AudioStream]->codec);
+        avcodec_flush_buffers(m_pAudioCodecContext);
     }
     else
     {
@@ -275,7 +287,7 @@ bool FFmpegDecoder::decodeAudioFrame(Frame& frame)
             av_frame_unref(m_pAudioFrame);
 
 
-            int32_t bytesDecoded = avcodec_decode_audio4(m_pAudioStream->codec, m_pAudioFrame, &gotFrame, &packet);
+            int32_t bytesDecoded = avcodec_decode_audio4(m_pAudioCodecContext, m_pAudioFrame, &gotFrame, &packet);
             if (bytesDecoded < 0)
             {
                 throw std::logic_error("Error decoding audio frame");
@@ -298,7 +310,7 @@ bool FFmpegDecoder::decodeAudioFrame(Frame& frame)
             }
             else
             {
-                m_AudioClock += static_cast<double>(bytesDecoded) / (2 * m_pAudioStream->codec->channels * m_pAudioStream->codec->sample_rate);
+                m_AudioClock += static_cast<double>(bytesDecoded) / (2 * m_pAudioCodecParameters->channels * m_pAudioCodecParameters->sample_rate);
             }
 
             auto bytesPerSample = av_get_bytes_per_sample(m_pAudioCodecContext->sample_fmt);
@@ -318,7 +330,7 @@ bool FFmpegDecoder::decodeAudioFrame(Frame& frame)
             }
             else
             {
-                frame.setDataSize((m_pAudioFrame->nb_samples * bytesPerSample) * m_pAudioStream->codec->channels);
+                frame.setDataSize((m_pAudioFrame->nb_samples * bytesPerSample) * m_pAudioCodecParameters->channels);
                 frame.setFrameData(m_pAudioFrame->data[0]);
                 m_BytesPerFrame = max(m_BytesPerFrame, static_cast<size_t>(bytesDecoded));
             }

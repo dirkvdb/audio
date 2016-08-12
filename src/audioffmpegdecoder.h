@@ -22,6 +22,7 @@
 
 struct AVFormatContext;
 struct AVCodecContext;
+struct AVCodecParameters;
 struct AVCodec;
 struct AVPacket;
 struct AVStream;
@@ -67,6 +68,7 @@ private:
     int32_t                 m_AudioStream;
     AVFormatContext*        m_pFormatContext;
     AVCodecContext*         m_pAudioCodecContext;
+    AVCodecParameters*      m_pAudioCodecParameters;
     AVCodec*                m_pAudioCodec;
     AVStream*               m_pAudioStream;
     AVFrame*                m_pAudioFrame;
