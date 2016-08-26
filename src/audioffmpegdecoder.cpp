@@ -150,11 +150,11 @@ void FFmpegDecoder::initializeAudio()
     m_pAudioCodecParameters = m_pFormatContext->streams[m_AudioStream]->codecpar;
 
     auto* codecContext = avcodec_alloc_context3(nullptr);
-    auto ret = avcodec_parameters_to_context(m_pAudioCodecContext, m_pAudioCodecParameters);
+    auto ret = avcodec_parameters_to_context(codecContext, m_pAudioCodecParameters);
     if (ret < 0)
     {
         avcodec_free_context(&codecContext);
-        throw logic_error("Failed to convert coded parameters " + av_make_error_string(ret));
+        throw logic_error("Failed to convert codec parameters " + av_make_error_string(ret));
     }
 
     m_pAudioCodec = avcodec_find_decoder(m_pAudioCodecContext->codec_id);
