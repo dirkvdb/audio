@@ -18,10 +18,6 @@
 
 #include "audioconfig.h"
 
-#ifdef WIN32
-#include "winconfig.h"
-#endif
-
 #if HAVE_OPENAL
 #include "audioopenalrenderer.h"
 #endif

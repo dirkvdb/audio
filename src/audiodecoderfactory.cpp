@@ -23,10 +23,6 @@
 
 #include "audioconfig.h"
 
-#ifdef WIN32
-    #include "winconfig.h"
-#endif
-
 #ifdef HAVE_MAD
     #include "audiomaddecoder.h"
 #endif

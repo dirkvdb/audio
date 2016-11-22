@@ -24,10 +24,6 @@
 #include <algorithm>
 #include <mutex>
 
-#ifdef WIN32
-#include "winconfig.h"
-#endif
-
 extern "C"
 {
     #include <libavcodec/avcodec.h>
