@@ -1,174 +1,174 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-ENABLE_TESTING()
+cmake_minimum_required(VERSION 2.8)
+enable_testing()
 
-OPTION(STANDALONE "Not used as a submodule of another project" OFF)
-OPTION(TESTTOOLS "Build tools for testing" OFF)
-OPTION(ENABLE_TESTS "build unit tests" ON)
+option(STANDALONE "Not used as a submodule of another project" OFF)
+option(TESTTOOLS "Build tools for testing" OFF)
+option(ENABLE_TESTS "build unit tests" ON)
 
-ADD_DEFINITIONS("-D__STDC_CONSTANT_MACROS")
+add_definitions("-D__STDC_CONSTANT_MACROS")
 
-IF (STANDALONE)
-    ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/../utils "${CMAKE_CURRENT_BINARY_DIR}/utils")
-    SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
-    SET (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O1")
-    ADD_DEFINITIONS("-std=c++1y")
-    IF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND APPLE)
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-    ENDIF ()
-ENDIF ()
+if (STANDALONE)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/../utils "${CMAKE_CURRENT_BINARY_DIR}/utils")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O1")
+    add_definitions("-std=c++1y")
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND APPLE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    endif ()
+endif ()
 
-FIND_PACKAGE(PkgConfig)
-PKG_CHECK_MODULES(PULSEAUDIO_PKG libpulse)
-PKG_CHECK_MODULES(FLAC_PKG flac)
-PKG_CHECK_MODULES(FLACCPP_PKG flac++)
-PKG_CHECK_MODULES(MAD_PKG mad)
-PKG_CHECK_MODULES(AVCODEC_PKG libavcodec)
-PKG_CHECK_MODULES(AVFORMAT_PKG libavformat)
-PKG_CHECK_MODULES(AVUTIL_PKG libavutil)
-PKG_CHECK_MODULES(SWRESAMPLE_PKG libswresample)
-PKG_CHECK_MODULES(TAGLIB_PKG taglib)
+find_package(PkgConfig)
+pkg_check_modules(PULSEAUDIO_PKG libpulse)
+pkg_check_modules(FLAC_PKG flac)
+pkg_check_modules(FLACCPP_PKG flac++)
+pkg_check_modules(MAD_PKG mad)
+pkg_check_modules(AVCODEC_PKG libavcodec)
+pkg_check_modules(AVFORMAT_PKG libavformat)
+pkg_check_modules(AVUTIL_PKG libavutil)
+pkg_check_modules(SWRESAMPLE_PKG libswresample)
+pkg_check_modules(TAGLIB_PKG taglib)
 
-FIND_PACKAGE(ALSA)
-IF (ALSA_FOUND)
-    OPTION(HAVE_ALSA "Alsa audio output support" ON)
-ENDIF ()
+find_package(ALSA)
+if (ALSA_FOUND)
+    option(HAVE_ALSA "Alsa audio output support" ON)
+endif ()
 
-FIND_PACKAGE(OpenAL)
-IF (OPENAL_FOUND)
-    OPTION(HAVE_OPENAL "OpenAL audio output support" ON)
-ENDIF ()
+find_package(OpenAL)
+if (OPENAL_FOUND)
+    option(HAVE_OPENAL "OpenAL audio output support" ON)
+endif ()
 
-IF (PULSEAUDIO_PKG_FOUND)
-    OPTION(HAVE_PULSE "Pulse audio output support" ON)
+if (PULSEAUDIO_PKG_FOUND)
+    option(HAVE_PULSE "Pulse audio output support" ON)
 
-    FIND_PATH(PULSEAUDIO_INCLUDE_DIR
+    find_path(PULSEAUDIO_INCLUDE_DIR
         NAMES pulse/pulseaudio.h
         PATHS ${PULSEAUDIO_PKG_INCLUDE_DIRS}
     )
 
-    FIND_LIBRARY(PULSEAUDIO_LIBRARY
+    find_library(PULSEAUDIO_LIBRARY
         NAMES ${PULSEAUDIO_PKG_LIBRARIES}
         PATHS ${PULSEAUDIO_PKG_LIBRARY_DIRS}
     )
-ENDIF ()
+endif ()
 
-IF (AVCODEC_PKG_FOUND AND AVFORMAT_PKG_FOUND AND AVUTIL_PKG_FOUND AND SWRESAMPLE_PKG_FOUND)
-    OPTION(HAVE_FFMPEG "FFmpeg audio decoder support" ON)
+if (AVCODEC_PKG_FOUND AND AVFORMAT_PKG_FOUND AND AVUTIL_PKG_FOUND AND SWRESAMPLE_PKG_FOUND)
+    option(HAVE_FFMPEG "FFmpeg audio decoder support" ON)
 
-    FIND_PATH(AVCODEC_INCLUDE_DIR
+    find_path(AVCODEC_INCLUDE_DIR
         NAMES libavcodec/avcodec.h
         PATHS ${AVCODEC_PKG_INCLUDE_DIRS}
     )
 
-    FIND_PATH(AVFORMAT_INCLUDE_DIR
+    find_path(AVFORMAT_INCLUDE_DIR
         NAMES libavcodec/avcodec.h
         PATHS ${AVFORMAT_PKG_INCLUDE_DIRS}
     )
 
-    FIND_PATH(AVUTIL_INCLUDE_DIR
+    find_path(AVUTIL_INCLUDE_DIR
         NAMES libavutil/avutil.h
         PATHS ${AVUTIL_PKG_INCLUDE_DIRS}
     )
 
-    FIND_PATH(SWRESAMPLE_INCLUDE_DIR
+    find_path(SWRESAMPLE_INCLUDE_DIR
         NAMES libswresample/swresample.h
         PATHS ${SWRESAMPLE_PKG_INCLUDE_DIRS}
     )
 
-    FIND_LIBRARY(AVCODEC_LIBRARY
+    find_library(AVCODEC_LIBRARY
         NAMES ${AVCODEC_PKG_LIBRARIES}
         PATHS ${AVCODEC_PKG_LIBRARY_DIRS}
     )
 
-    FIND_LIBRARY(AVFORMAT_LIBRARY
+    find_library(AVFORMAT_LIBRARY
         NAMES ${AVFORMAT_PKG_LIBRARIES}
         PATHS ${AVFORMAT_PKG_LIBRARY_DIRS}
     )
 
-    FIND_LIBRARY(AVUTIL_LIBRARY
+    find_library(AVUTIL_LIBRARY
         NAMES ${AVUTIL_PKG_LIBRARIES}
         PATHS ${AVUTIL_PKG_LIBRARY_DIRS}
     )
 
-    FIND_LIBRARY(SWRESAMPLE_LIBRARY
+    find_library(SWRESAMPLE_LIBRARY
         NAMES ${SWRESAMPLE_PKG_LIBRARIES}
         PATHS ${SWRESAMPLE_PKG_LIBRARY_DIRS}
     )
 
-    SET(FFMPEG_INCLUDE_DIRS ${AVFORMAT_INCLUDE_DIR} ${AVCODEC_INCLUDE_DIR} ${AVUTIL_INCLUDE_DIR} ${SWRESAMPLE_INCLUDE_DIR})
-    SET(FFMPEG_LIBRARIES ${AVFORMAT_LIBRARY} ${AVCODEC_LIBRARY} ${AVUTIL_LIBRARY} ${SWRESAMPLE_LIBRARY})
-ENDIF ()
+    set(FFMPEG_INCLUDE_DIRS ${AVFORMAT_INCLUDE_DIR} ${AVCODEC_INCLUDE_DIR} ${AVUTIL_INCLUDE_DIR} ${SWRESAMPLE_INCLUDE_DIR})
+    set(FFMPEG_LIBRARIES ${AVFORMAT_LIBRARY} ${AVCODEC_LIBRARY} ${AVUTIL_LIBRARY} ${SWRESAMPLE_LIBRARY})
+endif ()
 
-IF (FLACCPP_PKG_FOUND)
-    OPTION(HAVE_FLAC "Flac audio decoder support" ON)
+if (FLACCPP_PKG_FOUND)
+    option(HAVE_FLAC "Flac audio decoder support" ON)
 
-    FIND_PATH(FLACCPP_INCLUDE_DIR
+    find_path(FLACCPP_INCLUDE_DIR
         NAMES FLAC++/decoder.h
         PATHS ${FLACCPP_PKG_INCLUDE_DIRS}
     )
 
-    FIND_PATH(FLAC_INCLUDE_DIR
+    find_path(FLAC_INCLUDE_DIR
         NAMES FLAC/all.h
         PATHS ${FLACCPP_PKG_INCLUDE_DIRS}
     )
 
-    FIND_LIBRARY(FLACCPP_LIBRARY
+    find_library(FLACCPP_LIBRARY
         NAMES ${FLACCPP_PKG_LIBRARIES}
         PATHS ${FLACCPP_PKG_LIBRARY_DIRS}
     )
 
-    FIND_LIBRARY(FLAC_LIBRARY
+    find_library(FLAC_LIBRARY
         NAMES ${FLAC_PKG_LIBRARIES}
         PATHS ${FLAC_PKG_LIBRARY_DIRS}
     )
 
-    SET(FLAC_INCLUDE_DIRS ${FLAC_INCLUDE_DIR} ${FLACCPP_INCLUDE_DIR})
-    SET(FLAC_LIBRARIES ${FLAC_LIBRARY} ${FLACCPP_LIBRARY})
-ENDIF ()
+    set(FLAC_INCLUDE_DIRS ${FLAC_INCLUDE_DIR} ${FLACCPP_INCLUDE_DIR})
+    set(FLAC_LIBRARIES ${FLAC_LIBRARY} ${FLACCPP_LIBRARY})
+endif ()
 
-IF (MAD_PKG_FOUND)
-    OPTION(HAVE_MAD "Mad mp3 audio decoder support" ON)
+if (MAD_PKG_FOUND)
+    option(HAVE_MAD "Mad mp3 audio decoder support" ON)
 
-    FIND_PATH(MAD_INCLUDE_DIR
+    find_path(MAD_INCLUDE_DIR
         NAMES mad.h
         PATHS ${MAD_PKG_INCLUDE_DIRS}
     )
 
-    FIND_LIBRARY(MAD_LIBRARY
+    find_library(MAD_LIBRARY
         NAMES ${MAD_PKG_LIBRARIES}
         PATHS ${MAD_PKG_LIBRARY_DIRS}
     )
-ENDIF ()
+endif ()
 
-IF (TAGLIB_PKG_FOUND)
-    OPTION(HAVE_TAGLIB "Taglib audio metadata support" ON)
-    FIND_PACKAGE(ZLIB REQUIRED)
+if (TAGLIB_PKG_FOUND)
+    option(HAVE_TAGLIB "Taglib audio metadata support" ON)
+    find_package(ZLIB REQUIRED)
 
-    FIND_PATH(TAGLIB_INCLUDE_DIR
+    find_path(TAGLIB_INCLUDE_DIR
         NAMES taglib.h
         PATHS ${TAGLIB_PKG_INCLUDE_DIRS}
         PATH_SUFFIXES taglib
     )
 
-    FIND_LIBRARY(TAGLIB_LIBRARY
+    find_library(TAGLIB_LIBRARY
         NAMES ${TAGLIB_PKG_LIBRARIES}
         PATHS ${TAGLIB_PKG_LIBRARY_DIRS}
     )
-ENDIF ()
+endif ()
 
-IF (OPENAL_FOUND)
-    LIST(APPEND AUDIO_INCLUDE_DIRS ${OPENAL_INCLUDE_DIR})
-    LIST(APPEND AUDIO_LIBRARIES ${OPENAL_LIBRARY})
-    IF (${CMAKE_SYSTEM_NAME} STREQUAL "Android")
-        LIST(APPEND AUDIO_LIBRARIES -lOpenSLES)
+if (OPENAL_FOUND)
+    list(APPEND AUDIO_INCLUDE_DIRS ${OPENAL_INCLUDE_DIR})
+    list(APPEND AUDIO_LIBRARIES ${OPENAL_LIBRARY})
+    if (${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+        list(APPEND AUDIO_LIBRARIES OpenSLES)
     ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        LIST(APPEND AUDIO_LIBRARIES -lrt)
-    ENDIF ()
+        list(APPEND AUDIO_LIBRARIES rt)
+    endif ()
 
-    IF (MINGW)
-        LIST(APPEND AUDIO_LIBRARIES -lWinmm)
-    ENDIF ()
-ENDIF ()
+    if (MINGW)
+        list(APPEND AUDIO_LIBRARIES Winmm)
+    endif ()
+endif ()
 
 SET (AUDIO_SRC_LIST
     src/audiobuffer.h                   src/audiobuffer.h
@@ -188,41 +188,39 @@ SET (AUDIO_SRC_LIST
     inc/audio/audiom3uparser.h          src/audiom3uparser.cpp
 )
 
-IF (HAVE_ALSA)
-    LIST(APPEND AUDIO_SRC_LIST src/audioalsarenderer.h src/audioalsarenderer.cpp)
-ENDIF ()
+if (HAVE_ALSA)
+    list(APPEND AUDIO_SRC_LIST src/audioalsarenderer.h src/audioalsarenderer.cpp)
+endif ()
 
-IF (HAVE_OPENAL)
-    LIST(APPEND AUDIO_SRC_LIST src/audioopenalrenderer.h src/audioopenalrenderer.cpp)
-ENDIF ()
+if (HAVE_OPENAL)
+    list(APPEND AUDIO_SRC_LIST src/audioopenalrenderer.h src/audioopenalrenderer.cpp)
+endif ()
 
-IF (HAVE_PULSE)
-    LIST(APPEND AUDIO_SRC_LIST src/audiopulserenderer.h src/audiopulserenderer.cpp)
-ENDIF ()
+if (HAVE_PULSE)
+    list(APPEND AUDIO_SRC_LIST src/audiopulserenderer.h src/audiopulserenderer.cpp)
+endif ()
 
-IF (HAVE_FFMPEG)
-    LIST(APPEND AUDIO_SRC_LIST src/audioffmpegdecoder.h src/audioffmpegdecoder.cpp)
-    LIST(APPEND AUDIO_SRC_LIST src/audioresampler.h src/audioresampler.cpp)
-ENDIF ()
+if (HAVE_FFMPEG)
+    list(APPEND AUDIO_SRC_LIST src/audioffmpegdecoder.h src/audioffmpegdecoder.cpp)
+    list(APPEND AUDIO_SRC_LIST src/audioresampler.h src/audioresampler.cpp)
+endif ()
 
-IF (HAVE_FLAC)
-    LIST(APPEND AUDIO_SRC_LIST src/audioflacdecoder.h src/audioflacdecoder.cpp)
-ENDIF ()
+if (HAVE_FLAC)
+    list(APPEND AUDIO_SRC_LIST src/audioflacdecoder.h src/audioflacdecoder.cpp)
+endif ()
 
-IF (HAVE_MAD)
-    LIST(APPEND AUDIO_SRC_LIST src/audiomaddecoder.h src/audiomaddecoder.cpp)
-ENDIF ()
+if (HAVE_MAD)
+    list(APPEND AUDIO_SRC_LIST src/audiomaddecoder.h src/audiomaddecoder.cpp)
+endif ()
 
-IF (HAVE_TAGLIB)
-    LIST(APPEND AUDIO_SRC_LIST inc/audio/audiometadata.h src/audiometadata.cpp
+if (HAVE_TAGLIB)
+    list(APPEND AUDIO_SRC_LIST inc/audio/audiometadata.h src/audiometadata.cpp
                                src/audiotaglibiostream.h src/audiotaglibiostream.cpp)
-ENDIF ()
+endif ()
 
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR} ${AUDIO_INCLUDE_DIRS})
-INCLUDE_DIRECTORIES(SYSTEM ${AUDIO_SYS_INCLUDE_DIRS})
-LINK_DIRECTORIES(${AUDIO_LIBRARY_DIRS})
+link_directories(${AUDIO_LIBRARY_DIRS})
 
-ADD_LIBRARY(audio STATIC ${AUDIO_SRC_LIST})
+add_library(audio STATIC ${AUDIO_SRC_LIST})
 
 target_include_directories(audio PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>
@@ -233,13 +231,14 @@ target_include_directories(audio PUBLIC
 target_include_directories(audio SYSTEM PRIVATE
     ${ALSA_INCLUDE_DIRS}
     ${PULSEAUDIO_INCLUDE_DIRS}
+    ${AUDIO_INCLUDE_DIRS}
     ${MAD_INCLUDE_DIR}
     ${FFMPEG_INCLUDE_DIRS}
     ${FLAC_INCLUDE_DIRS}
     ${TAGLIB_INCLUDE_DIR}
 )
 
-TARGET_LINK_LIBRARIES(audio
+target_link_libraries(audio
     ${AUDIO_LIBRARIES}
     ${TAGLIB_LIBRARY}
     ${ALSA_LIBRARIES}
@@ -252,22 +251,22 @@ TARGET_LINK_LIBRARIES(audio
     utils
 )
 
-IF (UNIX OR APPLE)
-    ADD_DEFINITIONS("-DCONSOLE_SUPPORTS_COLOR")
-ENDIF ()
+if (UNIX OR APPLE)
+    add_definitions("-DCONSOLE_SUPPORTS_COLOR")
+endif ()
 
-IF (MINGW OR WIN32)
+if (MINGW OR WIN32)
     # needed to avoid __imp* linker errors when linking against static libraries
-    ADD_DEFINITIONS("-DTAGLIB_STATIC -DAL_LIBTYPE_STATIC")
-    TARGET_LINK_LIBRARIES(audio Mswsock Ws2_32)
-ENDIF ()
+    add_definitions("-DTAGLIB_STATIC -DAL_LIBTYPE_STATIC")
+    target_link_libraries(audio Mswsock Ws2_32)
+endif ()
 
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/audioconfig.h.in ${CMAKE_BINARY_DIR}/audioconfig.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/audioconfig.h.in ${CMAKE_BINARY_DIR}/audioconfig.h)
 
-IF (TESTTOOLS)
-    ADD_SUBDIRECTORY(testtools)
-ENDIF ()
+if (TESTTOOLS)
+    add_subdirectory(testtools)
+endif ()
 
-IF (ENABLE_TESTS)
-    ADD_SUBDIRECTORY(test)
-ENDIF ()
+if (ENABLE_TESTS)
+    add_subdirectory(test)
+endif ()
