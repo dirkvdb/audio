@@ -50,6 +50,7 @@ Playback::Playback(IPlaylist& playlist, const std::string& appName, const std::s
 , m_SkipTrack(false)
 , m_SeekOccured(false)
 , m_CurrentPts(0)
+, m_AvailableActions(std::set<PlaybackAction>{PlaybackAction::Play})
 , m_PlaybackThread(&Playback::playbackLoop, this)
 {
     try

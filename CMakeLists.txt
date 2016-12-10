@@ -188,6 +188,8 @@ SET (AUDIO_SRC_LIST
     inc/audio/audiotrackinterface.h
     src/audiobuffer.h                   src/audiobuffer.cpp
     inc/audio/audiom3uparser.h          src/audiom3uparser.cpp
+
+    .travis.yml
 )
 
 if (HAVE_ALSA)

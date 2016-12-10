@@ -51,7 +51,7 @@ public:
         return std::make_shared<Track>(track);
     }
     
-    virtual size_t getNumberOfTracks() const
+    virtual size_t getNumberOfTracks() const override
     {
         return m_Tracks.size();
     }

@@ -153,6 +153,7 @@ void FFmpegDecoder::initializeAudio()
         throw logic_error("Failed to convert codec parameters " + av_make_error_string(ret));
     }
 
+    m_pAudioCodecContext = codecContext;
     m_pAudioCodec = avcodec_find_decoder(m_pAudioCodecContext->codec_id);
 
     if (m_pAudioCodec == nullptr)
@@ -161,8 +162,6 @@ void FFmpegDecoder::initializeAudio()
         avcodec_free_context(&codecContext);
         throw logic_error("Audio Codec not found for " + m_Filepath);
     }
-
-    m_pAudioCodecContext = codecContext;
 
     // currently we disable ac3 surround
     m_pAudioCodecContext->channels = 2;
