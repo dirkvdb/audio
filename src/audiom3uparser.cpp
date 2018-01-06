@@ -30,11 +30,11 @@ namespace audio
 std::vector<std::string> M3uParser::parseFileContents(const std::string& contents)
 {
     std::string copy = contents;
-    stringops::dos2unix(copy);
-    auto lines = stringops::split(copy, '\n');
+    str::dos2unix(copy);
+    auto lines = str::split(copy, '\n');
 
     lines.erase(std::remove_if(lines.begin(), lines.end(), [](const std::string& line) {
-        return line.find("#") == 0 || stringops::trim(line).empty();
+        return line.find("#") == 0 || str::trim(line).empty();
     }),
         lines.end());
 

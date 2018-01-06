@@ -18,21 +18,21 @@
 
 #include <stdexcept>
 
-#include "utils/stringoperations.h"
 #include "utils/fileoperations.h"
+#include "utils/stringoperations.h"
 
 #include "audioconfig.h"
 
 #ifdef HAVE_MAD
-    #include "audiomaddecoder.h"
+#include "audiomaddecoder.h"
 #endif
 
 #ifdef HAVE_FLAC
-    #include "audioflacdecoder.h"
+#include "audioflacdecoder.h"
 #endif
 
 #ifdef HAVE_FFMPEG
-    #include "audioffmpegdecoder.h"
+#include "audioffmpegdecoder.h"
 #endif
 
 using namespace utils;
@@ -43,7 +43,7 @@ namespace audio
 IDecoder* DecoderFactory::create(const std::string& filepath)
 {
     std::string extension = fileops::getFileExtension(filepath);
-    stringops::lowercase(extension);
+    str::lowercase_in_place(extension);
 
     if (extension == "mp3")
     {
@@ -69,4 +69,4 @@ IDecoder* DecoderFactory::create(const std::string& filepath)
 #endif
 }
 
-}
+} // namespace audio

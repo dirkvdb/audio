@@ -70,17 +70,17 @@ Metadata::Metadata(const std::string& uri, ReadAudioProperties props)
 
 std::string Metadata::getArtist()
 {
-    return stringops::trim(m_TagFile->tag()->artist().to8Bit(true));
+    return str::trim(m_TagFile->tag()->artist().to8Bit(true));
 }
 
 std::string Metadata::getTitle()
 {
-    return stringops::trim(m_TagFile->tag()->title().to8Bit(true));
+    return str::trim(m_TagFile->tag()->title().to8Bit(true));
 }
 
 std::string Metadata::getAlbum()
 {
-    return stringops::trim(m_TagFile->tag()->album().to8Bit(true));
+    return str::trim(m_TagFile->tag()->album().to8Bit(true));
 }
 
 std::string Metadata::getAlbumArtist()
@@ -92,7 +92,7 @@ std::string Metadata::getAlbumArtist()
             const TagLib::ID3v2::FrameList& tpe2List = pMpegFile->ID3v2Tag()->frameList("TPE2");
             if (!tpe2List.isEmpty())
             {
-                return stringops::trim(tpe2List.front()->toString().to8Bit(true));
+                return str::trim(tpe2List.front()->toString().to8Bit(true));
             }
         }
     }
@@ -101,7 +101,7 @@ std::string Metadata::getAlbumArtist()
         auto&items = pMp4File->tag()->itemListMap();
         if (items.contains("aART"))
         {
-            return stringops::trim(items["aART"].toStringList().front().to8Bit(true));
+            return str::trim(items["aART"].toStringList().front().to8Bit(true));
         }
     }
 
@@ -110,7 +110,7 @@ std::string Metadata::getAlbumArtist()
 
 std::string Metadata::getGenre()
 {
-    return stringops::trim(m_TagFile->tag()->genre().to8Bit(true));
+    return str::trim(m_TagFile->tag()->genre().to8Bit(true));
 }
 
 std::string Metadata::getComposer()
@@ -122,7 +122,7 @@ std::string Metadata::getComposer()
             const TagLib::ID3v2::FrameList& tcomList = pMpegFile->ID3v2Tag()->frameList("TCOM");
             if (!tcomList.isEmpty())
             {
-                return stringops::trim(tcomList.front()->toString().to8Bit(true));
+                return str::trim(tcomList.front()->toString().to8Bit(true));
             }
         }
     }
@@ -133,7 +133,7 @@ std::string Metadata::getComposer()
             const TagLib::Ogg::FieldListMap& listMap = pVorbisFile->tag()->fieldListMap();
             if (!listMap["COMPOSER"].isEmpty())
             {
-                return stringops::trim(listMap["COMPOSER"].front().to8Bit(true));
+                return str::trim(listMap["COMPOSER"].front().to8Bit(true));
             }
         }
     }
@@ -144,7 +144,7 @@ std::string Metadata::getComposer()
             auto& listMap = pFlacFile->xiphComment()->fieldListMap();
             if (!listMap["COMPOSER"].isEmpty())
             {
-                return stringops::trim(listMap["COMPOSER"].front().to8Bit(true));
+                return str::trim(listMap["COMPOSER"].front().to8Bit(true));
             }
         }
     }
@@ -153,7 +153,7 @@ std::string Metadata::getComposer()
         auto&items = pMp4File->tag()->itemListMap();
         if (items.contains("@wrt"))
         {
-            return stringops::trim(items["aART"].toStringList().front().to8Bit(true));
+            return str::trim(items["aART"].toStringList().front().to8Bit(true));
         }
     }
 
@@ -169,7 +169,7 @@ uint32_t Metadata::getDiscNr()
             const TagLib::ID3v2::FrameList& tposList = pMpegFile->ID3v2Tag()->frameList("TPOS");
             if (!tposList.isEmpty())
             {
-                return parseDisc(stringops::trim(tposList.front()->toString().to8Bit(true)));
+                return parseDisc(str::trim(tposList.front()->toString().to8Bit(true)));
             }
         }
     }
@@ -180,7 +180,7 @@ uint32_t Metadata::getDiscNr()
             const TagLib::Ogg::FieldListMap& listMap = pVorbisFile->tag()->fieldListMap();
             if (!listMap["DISCNUMBER"].isEmpty())
             {
-                return parseDisc(stringops::trim(listMap["DISCNUMBER"].front().to8Bit(true)));
+                return parseDisc(str::trim(listMap["DISCNUMBER"].front().to8Bit(true)));
             }
         }
     }
@@ -191,7 +191,7 @@ uint32_t Metadata::getDiscNr()
             const TagLib::Ogg::FieldListMap& listMap = pFlacFile->xiphComment()->fieldListMap();
             if (!listMap["DISCNUMBER"].isEmpty())
             {
-                return parseDisc(stringops::trim(listMap["DISCNUMBER"].front().to8Bit(true)));
+                return parseDisc(str::trim(listMap["DISCNUMBER"].front().to8Bit(true)));
             }
         }
     }
@@ -319,7 +319,7 @@ AlbumArt Metadata::getAlbumArt()
 uint32_t Metadata::parseDisc(const std::string& disc)
 {
     size_t pos = disc.find('/');
-    return stringops::toNumeric<uint32_t>(pos == std::string::npos ? disc : disc.substr(0, pos));
+    return str::toNumeric<uint32_t>(pos == std::string::npos ? disc : disc.substr(0, pos));
 }
 
 void Metadata::throwIfNotValid() const
@@ -333,7 +333,7 @@ void Metadata::throwIfNotValid() const
 static std::shared_ptr<TagLib::File> createFile(TagLib::IOStream& ioStream, Metadata::ReadAudioProperties props, AudioProperties::ReadStyle audioPropertiesStyle)
 {
     bool readAudioProperties = props == Metadata::ReadAudioProperties::Yes;
-    std::string ext = stringops::uppercase(fileops::getFileExtension(ioStream.name()));
+    std::string ext = str::uppercase(fileops::getFileExtension(ioStream.name()));
 
     if (ext == "MP3")
     {
