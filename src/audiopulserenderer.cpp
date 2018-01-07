@@ -17,7 +17,6 @@
 #include "audiopulserenderer.h"
 
 #include "audio/audioframe.h"
-#include "utils/numericoperations.h"
 #include "utils/log.h"
 
 #include <cassert>
@@ -287,7 +286,7 @@ void PulseRenderer::stop(bool drain)
 
 void PulseRenderer::setVolume(int32_t volume)
 {
-    numericops::clip(volume, 0, 100);
+    volume = std::clamp(volume, 0, 100);
 
     if (volume == m_VolumeInt)
     {
