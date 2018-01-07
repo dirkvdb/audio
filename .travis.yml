@@ -15,7 +15,7 @@ matrix:
             - libopenal-dev
             - libasound2-dev
       env:
-        - BUILD_TYPE=Debug
+        - COMPILER=5.0 LLVM_VERSION=5.0.1 BUILD_TYPE=Debug
     - compiler: clang
       addons:
         apt:
@@ -29,7 +29,7 @@ matrix:
             - libopenal-dev
             - libasound2-dev
       env:
-        - BUILD_TYPE=Release
+        - COMPILER=5.0 LLVM_VERSION=5.0.1 BUILD_TYPE=Release
     - compiler: gcc
       addons:
         apt:
@@ -86,6 +86,25 @@ before_install:
   - |
     if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
       brew install libtag libmad flac fmt
+    fi
+
+  ############################################################################
+  # Install clang on linux
+  ############################################################################
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" && "${CXX}" == "clang++" ]]; then
+      if [[ "$COMPILER" == "4.0" ]]; then
+        travis_retry wget --quiet -O - http://llvm.org/releases/${LLVM_VERSION}/clang+llvm-${LLVM_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz | tar --strip-components=1 ${TAR_FLAGS} -xJ -C ${DEPS_DIR}/local
+      else
+        travis_retry wget --quiet -O - http://releases.llvm.org/${LLVM_VERSION}/clang+llvm-${LLVM_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz | tar --strip-components=1 ${TAR_FLAGS} -xJ -C ${DEPS_DIR}/local
+      fi
+
+
+      export PATH=${DEPS_DIR}/local/bin:${PATH}
+      export LDFLAGS="${LDFLAGS} -lc++ -lc++abi -lm"
+      export CXXFLAGS="${CXXFLAGS} -isystem ${DEPS_DIR}/local/include/c++/v1 -stdlib=libc++"
+      export CXX="clang-${COMPILER}" CC="clang-${COMPILER}"
+      ${CXX} -v
     fi
     
   - if [ "$CXX" = "g++" ]; then export CXX="g++-${COMPILER}" CC="gcc-${COMPILER}"; fi
