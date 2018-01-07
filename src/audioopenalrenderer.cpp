@@ -16,18 +16,18 @@
 
 #include "audioopenalrenderer.h"
 
-#include "audio/audioframe.h"
 #include "audio/audioformat.h"
-#include "utils/numericoperations.h"
+#include "audio/audioframe.h"
 #include "utils/log.h"
 
 #ifdef HAVE_FFMPEG
 #include "audioresampler.h"
 #endif
 
+#include <algorithm>
 #include <cassert>
-#include <vector>
 #include <stdexcept>
+#include <vector>
 
 using namespace std;
 using namespace utils;
@@ -81,8 +81,8 @@ OpenALRenderer::~OpenALRenderer()
 void OpenALRenderer::setFormat(const Format& format)
 {
     m_FloatingPoint = false;
-    m_Frequency = format.rate;
-    m_SampleSize = format.bits / 8;
+    m_Frequency     = format.rate;
+    m_SampleSize    = format.bits / 8;
 
 #ifdef HAVE_FFMPEG
     m_resampler.reset();
@@ -101,14 +101,14 @@ void OpenALRenderer::setFormat(const Format& format)
     case 32:
         if (format.floatingPoint == false)
         {
-            m_AudioFormat = format.numChannels == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
+            m_AudioFormat   = format.numChannels == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
             auto destFormat = format;
             destFormat.bits = 16;
-            m_resampler = std::make_unique<Resampler>(format, destFormat);
+            m_resampler     = std::make_unique<Resampler>(format, destFormat);
         }
         else
         {
-            m_AudioFormat = format.numChannels == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
+            m_AudioFormat   = format.numChannels == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
             m_FloatingPoint = true;
         }
         m_SampleSize = 16 / 8;
@@ -151,7 +151,7 @@ void OpenALRenderer::queueFrame(const Frame& frame)
     }
     else
 #endif
-    if (m_FloatingPoint)
+        if (m_FloatingPoint)
     {
         std::vector<int16_t> frameData;
         frameData.resize(frame.getDataSize() / sizeof(float));
@@ -159,7 +159,7 @@ void OpenALRenderer::queueFrame(const Frame& frame)
         auto pData = reinterpret_cast<const float*>(frame.getFrameData());
         for (auto i = 0u; i < frameData.size(); ++i)
         {
-            float sample = numericops::clip(*pData++, -1.f, 1.f);
+            float sample = std::clamp(*pData++, -1.f, 1.f);
             frameData[i] = static_cast<int16_t>(sample * 32768.f);
         }
 
@@ -191,7 +191,7 @@ void OpenALRenderer::flushBuffers()
     int processed = 0;
     alGetSourcei(m_AudioSource, AL_BUFFERS_PROCESSED, &processed);
 
-    while(processed--)
+    while (processed--)
     {
         ALuint buffer;
         alSourceUnqueueBuffers(m_AudioSource, 1, &buffer);
@@ -242,8 +242,7 @@ void OpenALRenderer::stop(bool /*drain*/)
 
 void OpenALRenderer::setVolume(int32_t volume)
 {
-    numericops::clip(m_Volume, 0, 100);
-    m_Volume = volume;
+    m_Volume = std::clamp(volume, 0, 100);
 
     if (!m_Muted)
     {
@@ -276,5 +275,4 @@ double OpenALRenderer::getCurrentPts()
 {
     return m_PtsQueue.empty() ? 0 : m_PtsQueue.front();
 }
-
 }

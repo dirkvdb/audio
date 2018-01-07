@@ -16,17 +16,17 @@
 
 #include "audiomaddecoder.h"
 
-#include <cmath>
+#include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstring>
 #include <stdexcept>
 
-#include "audio/audioframe.h"
 #include "audio/audioformat.h"
+#include "audio/audioframe.h"
+#include "utils/fileoperations.h"
 #include "utils/log.h"
 #include "utils/readerfactory.h"
-#include "utils/fileoperations.h"
-#include "utils/numericoperations.h"
 
 using namespace std;
 using namespace utils;
@@ -34,7 +34,7 @@ using namespace utils;
 namespace audio
 {
 
-static const size_t     INPUT_BUFFER_SIZE = 65536; //64kb buffer
+static const size_t INPUT_BUFFER_SIZE = 65536; //64kb buffer
 
 MadDecoder::MadDecoder(const std::string& uri)
 : IDecoder(uri)
@@ -47,10 +47,10 @@ MadDecoder::MadDecoder(const std::string& uri)
 , m_InputBuffer(INPUT_BUFFER_SIZE + MAD_BUFFER_GUARD)
 , m_RandomValueL(0)
 , m_RandomValueR(0)
-, m_Reader(ReaderFactory::createBuffered(uri, 1024*128))
+, m_Reader(ReaderFactory::createBuffered(uri, 1024 * 128))
 {
     m_Reader->open(uri);
-    
+
     m_FileSize = static_cast<uint32_t>(m_Reader->getContentLength());
 
     if (!readHeaders(*m_Reader))
@@ -78,8 +78,8 @@ MadDecoder::~MadDecoder()
 Format MadDecoder::getAudioFormat()
 {
     Format format;
-    format.bits = 16;
-    format.rate = m_MpegHeader.sampleRate;
+    format.bits        = 16;
+    format.rate        = m_MpegHeader.sampleRate;
     format.numChannels = m_MpegHeader.numChannels;
 
     return format;
@@ -108,42 +108,40 @@ size_t MadDecoder::getFrameSize()
 void MadDecoder::seekAbsolute(double time)
 {
     uint32_t byteOffset;
-    
-    float percentage = static_cast<float>(time / getDuration());
-    numericops::clip(percentage, 0.f, 100.f);
-    
+
+    float percentage = std::clamp(static_cast<float>(time / getDuration()), 0.f, 100.f);
+
     if (m_XingHeader.hasToc)
     {
-        int32_t tocIndex = static_cast<int32_t>(percentage * 100);
-        numericops::clip(tocIndex, 0, 99);
+        int32_t tocIndex = std::clamp(static_cast<int32_t>(percentage * 100), 0, 99);
 
         uint32_t value1 = m_XingHeader.toc[tocIndex];
-        uint32_t value2 = percentage < 99 ? m_XingHeader.toc[tocIndex+1] : 256;
+        uint32_t value2 = percentage < 99 ? m_XingHeader.toc[tocIndex + 1] : 256;
 
         float filePercentage = value1 + ((value2 - value1) * ((percentage * 100) - static_cast<float>(tocIndex)));
-        byteOffset = m_Id3Size + static_cast<uint32_t>((filePercentage * m_FileSize) / 256.0f);
+        byteOffset           = m_Id3Size + static_cast<uint32_t>((filePercentage * m_FileSize) / 256.0f);
     }
     else
     {
         byteOffset = m_Id3Size + static_cast<uint32_t>((m_FileSize * percentage));
     }
-    
+
     m_Reader->seekAbsolute(byteOffset);
 
     mad_stream_finish(&m_MadStream);
     mad_stream_init(&m_MadStream);
 
-    mad_frame_mute (&m_MadFrame);
-    mad_synth_mute (&m_MadSynth);
+    mad_frame_mute(&m_MadFrame);
+    mad_synth_mute(&m_MadSynth);
 
     uint32_t seconds = static_cast<uint32_t>(time);
     mad_timer_set(&m_TrackPos, seconds, 0, 0);
-    
+
     if (!readDataIfNecessary())
     {
         return; //eof
     }
-    
+
     synchronize();
 
     //already decode one frame to avoid clicks
@@ -161,7 +159,7 @@ bool MadDecoder::readDataIfNecessary()
 {
     if (m_MadStream.buffer == nullptr || m_MadStream.error == MAD_ERROR_BUFLEN)
     {
-        size_t bytesToRead = INPUT_BUFFER_SIZE;
+        size_t bytesToRead      = INPUT_BUFFER_SIZE;
         size_t choppedFrameSize = 0;
 
         if (m_MadStream.next_frame != nullptr)
@@ -204,7 +202,7 @@ bool MadDecoder::synchronize()
         {
             return true;
         }
-        
+
         if (!readDataIfNecessary())
         {
             return false;
@@ -216,7 +214,7 @@ bool MadDecoder::synchronize()
 
 static inline unsigned long prng(unsigned long state)
 {
-  return (state * 0x0019660dL + 0x3c6ef35fL) & 0xffffffffL;
+    return (state * 0x0019660dL + 0x3c6ef35fL) & 0xffffffffL;
 }
 
 //based on madplay dither code
@@ -231,8 +229,8 @@ inline int32_t dither(mad_fixed_t sample, mad_fixed_t ditherError[3], mad_fixed_
     /* bias */
     mad_fixed_t output = sample + (1L << (MAD_F_FRACBITS + 1 - 16 - 1));
 
-    uint32_t scalebits = MAD_F_FRACBITS + 1 - 16;
-    mad_fixed_t mask = static_cast<mad_fixed_t>((1L << scalebits) - 1);
+    uint32_t    scalebits = MAD_F_FRACBITS + 1 - 16;
+    mad_fixed_t mask      = static_cast<mad_fixed_t>((1L << scalebits) - 1);
 
     /* dither */
     mad_fixed_t rand = static_cast<mad_fixed_t>(prng(random));
@@ -277,7 +275,7 @@ bool MadDecoder::decodeAudioFrame(Frame& frame, bool processSamples)
                 log::warn("Decode error, but recoverable: {}", mad_stream_errorstr(&m_MadStream));
         }
         else
-        {        
+        {
             if (m_MadStream.error == MAD_ERROR_BUFLEN)
             {
                 if (m_Reader->eof())
@@ -308,27 +306,26 @@ bool MadDecoder::decodeAudioFrame(Frame& frame, bool processSamples)
 
     m_OutputBuffer.resize(m_MadSynth.pcm.length * m_MadSynth.pcm.channels * 2);
 
-    uint8_t* pFrameData = reinterpret_cast<uint8_t*>(&m_OutputBuffer[0]);
+    uint8_t*           pFrameData   = reinterpret_cast<uint8_t*>(&m_OutputBuffer[0]);
     mad_fixed_t const* leftChannel  = m_MadSynth.pcm.samples[0];
     mad_fixed_t const* rightChannel = m_MadSynth.pcm.samples[1];
 
     for (int32_t i = 0; i < m_MadSynth.pcm.length; ++i)
     {
         int32_t sample = dither(*leftChannel++, m_DitherErrorL, m_RandomValueL);
-        *pFrameData++ = sample & 0xFF;
-        *pFrameData++ = (sample >> 8) & 0xFF;
+        *pFrameData++  = sample & 0xFF;
+        *pFrameData++  = (sample >> 8) & 0xFF;
 
         if (m_MadSynth.pcm.channels == 2)
         {
-            sample = dither(*rightChannel++, m_DitherErrorR, m_RandomValueR);
+            sample        = dither(*rightChannel++, m_DitherErrorR, m_RandomValueR);
             *pFrameData++ = sample & 0xFF;
             *pFrameData++ = (sample >> 8) & 0xFF;
         }
     }
 
-
     frame.setPts(getAudioClock());
-    
+
     if (m_FirstFrame)
     {
         if (m_LameHeader.encoderDelay >= m_MadSynth.pcm.length)
@@ -367,7 +364,7 @@ bool MadDecoder::decodeAudioFrame(Frame& frame, bool processSamples)
     {
         frame.setFrameData(&m_OutputBuffer[0]);
         frame.setDataSize(m_OutputBuffer.size());
-    }    
+    }
 
     return true;
 }
@@ -375,7 +372,7 @@ bool MadDecoder::decodeAudioFrame(Frame& frame, bool processSamples)
 bool MadDecoder::readHeaders(utils::IReader& reader)
 {
     m_Id3Size = MpegUtils::skipId3Tag(reader);
-    
+
     uint32_t xingPos;
     if (MpegUtils::readMpegHeader(reader, m_MpegHeader, xingPos) == 0)
     {
@@ -414,7 +411,7 @@ bool MadDecoder::readHeaders(utils::IReader& reader)
     assert(m_MpegHeader.samplesPerFrame);
     assert(m_MpegHeader.sampleRate);
     assert(m_MpegHeader.bitRate);
-    
+
     if (m_XingHeader.numFrames > 0)
     {
         m_Duration = (m_XingHeader.numFrames * m_MpegHeader.samplesPerFrame) / m_MpegHeader.sampleRate;
@@ -426,5 +423,4 @@ bool MadDecoder::readHeaders(utils::IReader& reader)
 
     return true;
 }
-
 }

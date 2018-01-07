@@ -16,23 +16,22 @@
 
 #include "audioplayback.h"
 
-#include <iomanip>
-#include <cmath>
-#include <chrono>
 #include <cassert>
+#include <chrono>
+#include <cmath>
 #include <cstring>
+#include <iomanip>
 
 #include "audio/audiodecoder.h"
 #include "audio/audiodecoderfactory.h"
-#include "audio/audiorenderer.h"
 #include "audio/audioformat.h"
 #include "audio/audioframe.h"
+#include "audio/audioplaylistinterface.h"
+#include "audio/audiorenderer.h"
 #include "audio/audiorendererfactory.h"
 #include "audio/audiotrackinterface.h"
-#include "audio/audioplaylistinterface.h"
-#include "utils/timeoperations.h"
-#include "utils/numericoperations.h"
 #include "utils/log.h"
+#include "utils/timeoperations.h"
 
 using namespace std;
 using namespace std::placeholders;
@@ -56,7 +55,7 @@ Playback::Playback(IPlaylist& playlist, const std::string& appName, const std::s
     try
     {
         m_pAudioRenderer.reset(audio::RendererFactory::create(appName, audioOutput, deviceName));
-        m_pAudioRenderer->VolumeChanged.connect([this] (int32_t volume) { VolumeChanged(volume); }, this);
+        m_pAudioRenderer->VolumeChanged.connect([this](int32_t volume) { VolumeChanged(volume); }, this);
     }
     catch (std::exception&)
     {
@@ -68,7 +67,6 @@ Playback::Playback(IPlaylist& playlist, const std::string& appName, const std::s
     writeWaveHeader();
 #endif
 }
-
 
 Playback::~Playback()
 {
@@ -82,13 +80,13 @@ Playback::~Playback()
     {
         m_pAudioRenderer->VolumeChanged.disconnect(this);
     }
-    
+
     {
         std::lock_guard<std::mutex> lock(m_PlaybackMutex);
         m_Destroy = true;
         m_PlaybackCondition.notify_one();
     }
-    
+
     if (m_PlaybackThread.joinable())
     {
         log::debug("Waiting for playback thread");
@@ -105,7 +103,7 @@ bool Playback::startNewTrack()
         stopPlayback(true);
         return false;
     }
-    
+
     m_CurrentPts = 0.0;
 
     {
@@ -152,12 +150,12 @@ void Playback::playback(std::unique_lock<std::mutex>& lock)
     {
         return;
     }
-    
+
     assert(m_pAudioDecoder);
-    
+
     bool frameDecoded = false;
-    bool firstFrame = true;
-    
+    bool firstFrame   = true;
+
     while (!m_Stop)
     {
         while (!m_Stop && !isPaused() && rendererHasSpace(m_AudioFrame.getDataSize()))
@@ -167,13 +165,13 @@ void Playback::playback(std::unique_lock<std::mutex>& lock)
                 std::lock_guard<std::recursive_mutex> lock(m_DecodeMutex);
                 frameDecoded = m_pAudioDecoder->decodeAudioFrame(m_AudioFrame);
             }
-        
+
             if (!frameDecoded)
             {
                 // we could not decode a frame, end of file probably
                 break;
             }
-            
+
             if (m_SkipTrack)
             {
                 if (!startNewTrack())
@@ -181,7 +179,7 @@ void Playback::playback(std::unique_lock<std::mutex>& lock)
                     return;
                 }
 
-                firstFrame = true;
+                firstFrame  = true;
                 m_SkipTrack = false;
             }
 
@@ -191,21 +189,21 @@ void Playback::playback(std::unique_lock<std::mutex>& lock)
             }
 
             m_pAudioRenderer->queueFrame(m_AudioFrame);
-            
-            #ifdef DUMP_TO_WAVE
+
+#ifdef DUMP_TO_WAVE
             dumpToWav(m_AudioFrame);
-            #endif
+#endif
         }
-        
+
         if (firstFrame)
         {
             // Start the renderer after adding the first frame
             firstFrame = false;
             m_pAudioRenderer->play();
         }
-        
+
         sendProgressIfNeeded();
-        
+
         if (!frameDecoded && !startNewTrack())
         {
             log::debug("Stop it {}", frameDecoded);
@@ -276,7 +274,7 @@ void Playback::play()
     {
         m_SeekOccured ? m_pAudioRenderer->play() : m_pAudioRenderer->resume();
     }
-    
+
     setPlaybackState(PlaybackState::Playing);
 }
 
@@ -301,11 +299,11 @@ void Playback::stopPlayback(bool drain)
     if (m_pAudioRenderer && m_State != PlaybackState::Stopped)
     {
         m_CurrentPts = 0.0;
-        m_Stop = true;
+        m_Stop       = true;
 
         m_pAudioRenderer->stop(drain);
         setPlaybackState(PlaybackState::Stopped);
-        m_SeekOccured = false;
+        m_SeekOccured     = false;
         m_NewTrackStarted = false;
         m_PlaybackCondition.notify_one();
     }
@@ -460,9 +458,9 @@ void Playback::setPlaybackState(PlaybackState state)
     {
         m_State = state;
         PlaybackStateChanged(state);
-        
+
         std::set<PlaybackAction> availableActions;
-        
+
         switch (state)
         {
         case PlaybackState::Playing:
@@ -473,7 +471,7 @@ void Playback::setPlaybackState(PlaybackState state)
             {
                 availableActions.insert(PlaybackAction::Next);
             }
-            
+
             break;
         }
         case PlaybackState::Paused:
@@ -490,7 +488,7 @@ void Playback::setPlaybackState(PlaybackState state)
             assert(!"Invalid action");
             break;
         }
-        
+
         m_AvailableActions = availableActions;
         AvailableActionsChanged(availableActions);
     }
@@ -506,38 +504,38 @@ void Playback::writeWaveHeader()
         return;
     }
 
-    uint16_t bps = 16;
+    uint16_t bps           = 16;
     uint32_t subchunk1Size = 16; //16 for PCM
-    uint16_t audioFormat = 1; //PCM
-    uint16_t channels = 2;
-    uint32_t sampleRate = 44100;
-    uint32_t byteRate = 44100 * 2 * (bps / 8);
-    uint16_t blockAlign = 2 * (bps / 8);
+    uint16_t audioFormat   = 1;  //PCM
+    uint16_t channels      = 2;
+    uint32_t sampleRate    = 44100;
+    uint32_t byteRate      = 44100 * 2 * (bps / 8);
+    uint16_t blockAlign    = 2 * (bps / 8);
 
     //don't know yet
     m_WaveBytes = 0;
 
     m_WaveFile.write("RIFF", 4);
-    m_WaveFile.write((char*) &m_WaveBytes, 4);
+    m_WaveFile.write((char*)&m_WaveBytes, 4);
     m_WaveFile.write("WAVEfmt ", 8);
-    m_WaveFile.write((char*) &subchunk1Size, 4);
-    m_WaveFile.write((char*) &audioFormat, 2);
-    m_WaveFile.write((char*) &channels, 2);
-    m_WaveFile.write((char*) &sampleRate, 4);
-    m_WaveFile.write((char*) &byteRate, 4);
-    m_WaveFile.write((char*) &blockAlign, 2);
-    m_WaveFile.write((char*) &bps, 2);
+    m_WaveFile.write((char*)&subchunk1Size, 4);
+    m_WaveFile.write((char*)&audioFormat, 2);
+    m_WaveFile.write((char*)&channels, 2);
+    m_WaveFile.write((char*)&sampleRate, 4);
+    m_WaveFile.write((char*)&byteRate, 4);
+    m_WaveFile.write((char*)&blockAlign, 2);
+    m_WaveFile.write((char*)&bps, 2);
     m_WaveFile.write("data", 4);
-    m_WaveFile.write((char*) &m_WaveBytes, 4);
+    m_WaveFile.write((char*)&m_WaveBytes, 4);
 }
 
 void Playback::updateWaveHeaderSize()
 {
     m_WaveFile.seekp(4, ios_base::beg);
-    m_WaveFile.write((char*) &m_WaveBytes + 36, 4);
+    m_WaveFile.write((char*)&m_WaveBytes + 36, 4);
 
     m_WaveFile.seekp(40, ios_base::beg);
-    m_WaveFile.write((char*) &m_WaveBytes, 4);
+    m_WaveFile.write((char*)&m_WaveBytes, 4);
 
     m_WaveFile.close();
 }
