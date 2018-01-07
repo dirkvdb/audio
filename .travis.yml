@@ -1,5 +1,6 @@
 dist: trusty
 language: cpp
+group: travis_latest
 
 matrix:
   include:
@@ -63,12 +64,12 @@ matrix:
       os: osx
       env:
         - BUILD_TYPE=Debug
-      osx_image: xcode9
+      osx_image: xcode9.2
     - compiler: clang
       os: osx
       env:
         - BUILD_TYPE=Release
-      osx_image: xcode9
+      osx_image: xcode9.2
 
 before_install:
   ############################################################################
