@@ -24,7 +24,6 @@
 #include <cmath>
 
 #include "utils/log.h"
-#include "utils/numericoperations.h"
 
 using namespace std;
 using namespace utils;
@@ -272,8 +271,7 @@ void AlsaRenderer::stop(bool drain)
 
 void AlsaRenderer::setVolume(int32_t volume)
 {
-    numericops::clip(volume, 0, 100);
-    m_volume = volume;
+    m_volume = std::clamp(volume, 0, 100);
 }
 
 int32_t AlsaRenderer::getVolume()
@@ -432,8 +430,7 @@ void AlsaRenderer::applyVolume(uint8_t* pData, uint32_t dataSize)
         {
             short* pSample = reinterpret_cast<short*>(&pData[i]);
             int sample = ((*pSample) * scaleFactor + 128) >> 8;
-            numericops::clip(sample, -32768, 32767);
-            *pSample = sample;
+            *pSample = std::clamp(sample, -32768, 32767);
         }
     }
     else if (m_format.bits == 32)
